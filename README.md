@@ -1,4 +1,14 @@
-# 23VT-4ME307 Internet Architectures
+## 23VT-4ME307 Internet Architectures
+
+## Note Nirvana - a Note Taking App
+Note Nirvana is a web-based note-taking app that helps you stay organized and on top of your ideas. 
+With a sleek and intuitive interface, Note Nirvana makes it easy to create, edit, and manage your notes from anywhere.
+## Key Features
+- **Create and Edit Notes:** Quickly create new notes and edit existing ones using a simple, user-friendly interface.
+- **Organize Your Notes:** Sort and categorize your notes by tags, folders, and dates to stay on top of your ideas and projects.
+- **Search and Filter:** Easily find notes by searching for keywords or filtering by tags, folders, or dates.
+- **Collaborate:** Share notes with colleagues or friends for seamless collaboration on projects and ideas.
+- **Customize Your Experience:** Choose from a range of customizable themes and layouts to make Note Nirvana your own.
 
 ## Group Members: (Group - 6)
 1. Prasannjeet Singh
