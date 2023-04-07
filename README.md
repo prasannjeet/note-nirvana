@@ -17,7 +17,7 @@ With a sleek and intuitive interface, Note Nirvana makes it easy to create, edit
 4. Gauthem Krishna
 
 ### Steps to run the application
-1. The `frontend` folder contains the code for the frontend of the application. The frontend is built using ReactJS. To run the frontend, follow the steps below:
+1. The `frontend` folder contains the code for the frontend of the application. The frontend is built using NextJS. To run the frontend, follow the steps below:
     1. Open the terminal and navigate to the `frontend` folder.
     2. Run the command `npm install` to install all the dependencies.
     3. Run the command `npm start` to start the frontend server.
