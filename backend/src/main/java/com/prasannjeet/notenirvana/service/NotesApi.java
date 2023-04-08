@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-08T03:16:52.191807+02:00[Europe/Stockholm]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-08T16:34:45.451582+02:00[Europe/Stockholm]")
 @Validated
 @Controller
 @Tag(name = "notes", description = "the notes API")
