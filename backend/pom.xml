@@ -59,6 +59,24 @@
             <version>1.18.26</version>
         </dependency>
 
+        <!-- Security -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.security</groupId>-->
+<!--            <artifactId>spring-security-oauth2-resource-server</artifactId>-->
+<!--            <version>6.0.2</version>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+
         <!-- Build Plugins -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -66,6 +84,12 @@
             <version>${spring.version}</version>
             <optional>true</optional>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.projectlombok</groupId>-->
+<!--            <artifactId>lombok</artifactId>-->
+<!--            <version>1.18.22</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
         <!-- OpenAPI -->
         <dependency>
@@ -132,6 +156,27 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                            <version>${spring.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.26</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <!-- Copy docker directory and resources directory to target -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -212,7 +257,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.version}</version>
                 <configuration>
-                    <mainClass>${project.groupId}.${project.artifactId}.SpringBootApplication</mainClass>
+                    <mainClass>${project.groupId}.${project.artifactId}.NoteNirvanaApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

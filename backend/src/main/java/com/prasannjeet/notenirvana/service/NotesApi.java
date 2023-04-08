@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-08T16:34:45.451582+02:00[Europe/Stockholm]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-09T01:45:12.519646+02:00[Europe/Stockholm]")
 @Validated
 @Controller
 @Tag(name = "notes", description = "the notes API")
@@ -44,6 +44,7 @@ public interface NotesApi {
     /**
      * POST /notes : Create a new note
      *
+     * @param authorization Bearer token for authentication (required)
      * @param note  (required)
      * @return Note created (status code 201)
      *         or Bad Request (status code 400)
@@ -74,9 +75,10 @@ public interface NotesApi {
         consumes = { "application/json" }
     )
     default ResponseEntity<Note> createNote(
+        @NotNull @Parameter(name = "Authorization", description = "Bearer token for authentication", required = true, in = ParameterIn.HEADER) @RequestHeader(value = "Authorization", required = true) String authorization,
         @Parameter(name = "Note", description = "", required = true) @Valid @RequestBody Note note
     ) {
-        return getDelegate().createNote(note);
+        return getDelegate().createNote(authorization, note);
     }
 
 
@@ -84,6 +86,7 @@ public interface NotesApi {
      * DELETE /notes/{noteId} : Delete a note by ID
      *
      * @param noteId  (required)
+     * @param authorization Bearer token for authentication (required)
      * @return Note deleted (status code 204)
      *         or Unauthorized (status code 401)
      *         or Note not found (status code 404)
@@ -110,9 +113,10 @@ public interface NotesApi {
         produces = { "application/json" }
     )
     default ResponseEntity<Void> deleteNote(
-        @Parameter(name = "noteId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("noteId") UUID noteId
+        @Parameter(name = "noteId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("noteId") UUID noteId,
+        @NotNull @Parameter(name = "Authorization", description = "Bearer token for authentication", required = true, in = ParameterIn.HEADER) @RequestHeader(value = "Authorization", required = true) String authorization
     ) {
-        return getDelegate().deleteNote(noteId);
+        return getDelegate().deleteNote(noteId, authorization);
     }
 
 
@@ -120,6 +124,7 @@ public interface NotesApi {
      * GET /notes/{noteId} : Retrieve a note by ID
      *
      * @param noteId  (required)
+     * @param authorization Bearer token for authentication (required)
      * @return A single note (status code 200)
      *         or Unauthorized (status code 401)
      *         or Note not found (status code 404)
@@ -148,15 +153,17 @@ public interface NotesApi {
         produces = { "application/json" }
     )
     default ResponseEntity<Note> getNoteById(
-        @Parameter(name = "noteId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("noteId") UUID noteId
+        @Parameter(name = "noteId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("noteId") UUID noteId,
+        @NotNull @Parameter(name = "Authorization", description = "Bearer token for authentication", required = true, in = ParameterIn.HEADER) @RequestHeader(value = "Authorization", required = true) String authorization
     ) {
-        return getDelegate().getNoteById(noteId);
+        return getDelegate().getNoteById(noteId, authorization);
     }
 
 
     /**
      * GET /notes : Retrieve all notes for the user
      *
+     * @param authorization Bearer token for authentication (required)
      * @return A list of notes (status code 200)
      *         or Unauthorized (status code 401)
      */
@@ -181,9 +188,9 @@ public interface NotesApi {
         produces = { "application/json" }
     )
     default ResponseEntity<List<Note>> getNotes(
-        
+        @NotNull @Parameter(name = "Authorization", description = "Bearer token for authentication", required = true, in = ParameterIn.HEADER) @RequestHeader(value = "Authorization", required = true) String authorization
     ) {
-        return getDelegate().getNotes();
+        return getDelegate().getNotes(authorization);
     }
 
 
@@ -191,6 +198,7 @@ public interface NotesApi {
      * PUT /notes/{noteId} : Update a note by ID
      *
      * @param noteId  (required)
+     * @param authorization Bearer token for authentication (required)
      * @param note  (required)
      * @return Note updated (status code 200)
      *         or Bad Request (status code 400)
@@ -226,9 +234,10 @@ public interface NotesApi {
     )
     default ResponseEntity<Note> updateNote(
         @Parameter(name = "noteId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("noteId") UUID noteId,
+        @NotNull @Parameter(name = "Authorization", description = "Bearer token for authentication", required = true, in = ParameterIn.HEADER) @RequestHeader(value = "Authorization", required = true) String authorization,
         @Parameter(name = "Note", description = "", required = true) @Valid @RequestBody Note note
     ) {
-        return getDelegate().updateNote(noteId, note);
+        return getDelegate().updateNote(noteId, authorization, note);
     }
 
 }

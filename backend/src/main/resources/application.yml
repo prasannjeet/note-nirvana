@@ -13,3 +13,46 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_SCHEME}://${KEYCLOAK_AUTH_SERVER}:${KEYCLOAK_AUTH_PORT}/realms/${REALM_NAME}
+          jwk-set-uri: ${KEYCLOAK_SCHEME}://${KEYCLOAK_AUTH_SERVER}:${KEYCLOAK_AUTH_PORT}/realms/${REALM_NAME}/protocol/openid-connect/certs
+
+jwt:
+  auth:
+    converter:
+      resource-id: ${KEYCLOAK_CLIENT_ID}
+      principal-attribute: preferred_username
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+server:
+  port: '8080' # Or any available port you want
+  servlet:
+    context-path: /api
+
+keycloak-config:
+  keycloakScheme: ${KEYCLOAK_SCHEME}
+  keycloakAuthServer: ${KEYCLOAK_AUTH_SERVER}
+  keycloakAuthPort: ${KEYCLOAK_AUTH_PORT}
+  keycloakRealmName: ${REALM_NAME}
+  keycloakPublicKey: ${KEYCLOAK_PUBLIC_KEY}
+  keycloakClientId: ${KEYCLOAK_CLIENT_ID}
+  keycloakClientSecret: ${KEYCLOAK_CLIENT_SECRET}
+
+#keycloak:
+#  auth-server-url: ${KEYCLOAK_SCHEME}://${KEYCLOAK_AUTH_SERVER}:${KEYCLOAK_AUTH_PORT}
+#  realm: ${REALM_NAME}
+#  resource: ${KEYCLOAK_CLIENT_ID}
+#  credentials:
+#    secret: ${KEYCLOAK_CLIENT_SECRET}
+#  security-constraints:
+#    - authRoles:
+#        - user
+#      securityCollections:
+#        - patterns:
+#            - "/*"

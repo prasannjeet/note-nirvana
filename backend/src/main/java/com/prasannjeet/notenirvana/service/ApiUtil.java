@@ -1,8 +1,9 @@
 package com.prasannjeet.notenirvana.service;
 
-import java.io.IOException;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.context.request.NativeWebRequest;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 public class ApiUtil {
     public static void setExampleResponse(NativeWebRequest req, String contentType, String example) {

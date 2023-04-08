@@ -12,6 +12,13 @@ paths:
       operationId: getNotes
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token for authentication
       responses:
         '200':
           description: A list of notes
@@ -32,6 +39,13 @@ paths:
       operationId: createNote
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token for authentication
       requestBody:
         required: true
         content:
@@ -70,6 +84,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token for authentication
       responses:
         '200':
           description: A single note
@@ -101,6 +121,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token for authentication
       requestBody:
         required: true
         content:
@@ -144,6 +170,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer token for authentication
       responses:
         '204':
           description: Note deleted
