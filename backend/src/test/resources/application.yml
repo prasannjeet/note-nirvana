@@ -7,3 +7,15 @@ spring:
     hibernate:
       ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://keycloak.ooguy.com:8443/realms/timetable-oauth
+          jwk-set-uri: https://keycloak.ooguy.com:8443/realms/timetable-oauth/protocol/openid-connect/certs
+
+jwt:
+  auth:
+    converter:
+      resource-id: note-nirvana
+      principal-attribute: preferred_username

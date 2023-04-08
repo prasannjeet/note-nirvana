@@ -18,7 +18,7 @@ import javax.annotation.Generated;
  * A delegate to be called by the {@link NotesApiController}}.
  * Implement this interface with a {@link org.springframework.stereotype.Service} annotated class.
  */
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-08T16:34:45.451582+02:00[Europe/Stockholm]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-09T01:45:12.519646+02:00[Europe/Stockholm]")
 public interface NotesApiDelegate {
 
     default Optional<NativeWebRequest> getRequest() {
@@ -28,13 +28,15 @@ public interface NotesApiDelegate {
     /**
      * POST /notes : Create a new note
      *
+     * @param authorization Bearer token for authentication (required)
      * @param note  (required)
      * @return Note created (status code 201)
      *         or Bad Request (status code 400)
      *         or Unauthorized (status code 401)
      * @see NotesApi#createNote
      */
-    default ResponseEntity<Note> createNote(Note note) {
+    default ResponseEntity<Note> createNote(String authorization,
+        Note note) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
@@ -52,12 +54,14 @@ public interface NotesApiDelegate {
      * DELETE /notes/{noteId} : Delete a note by ID
      *
      * @param noteId  (required)
+     * @param authorization Bearer token for authentication (required)
      * @return Note deleted (status code 204)
      *         or Unauthorized (status code 401)
      *         or Note not found (status code 404)
      * @see NotesApi#deleteNote
      */
-    default ResponseEntity<Void> deleteNote(UUID noteId) {
+    default ResponseEntity<Void> deleteNote(UUID noteId,
+        String authorization) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
 
     }
@@ -66,12 +70,14 @@ public interface NotesApiDelegate {
      * GET /notes/{noteId} : Retrieve a note by ID
      *
      * @param noteId  (required)
+     * @param authorization Bearer token for authentication (required)
      * @return A single note (status code 200)
      *         or Unauthorized (status code 401)
      *         or Note not found (status code 404)
      * @see NotesApi#getNoteById
      */
-    default ResponseEntity<Note> getNoteById(UUID noteId) {
+    default ResponseEntity<Note> getNoteById(UUID noteId,
+        String authorization) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
@@ -88,11 +94,12 @@ public interface NotesApiDelegate {
     /**
      * GET /notes : Retrieve all notes for the user
      *
+     * @param authorization Bearer token for authentication (required)
      * @return A list of notes (status code 200)
      *         or Unauthorized (status code 401)
      * @see NotesApi#getNotes
      */
-    default ResponseEntity<List<Note>> getNotes() {
+    default ResponseEntity<List<Note>> getNotes(String authorization) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
@@ -110,6 +117,7 @@ public interface NotesApiDelegate {
      * PUT /notes/{noteId} : Update a note by ID
      *
      * @param noteId  (required)
+     * @param authorization Bearer token for authentication (required)
      * @param note  (required)
      * @return Note updated (status code 200)
      *         or Bad Request (status code 400)
@@ -118,6 +126,7 @@ public interface NotesApiDelegate {
      * @see NotesApi#updateNote
      */
     default ResponseEntity<Note> updateNote(UUID noteId,
+        String authorization,
         Note note) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
