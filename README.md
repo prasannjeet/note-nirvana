@@ -25,9 +25,10 @@ With a sleek and intuitive interface, Note Nirvana makes it easy to create, edit
 2. The `backend` folder contains the code for the backend of the application. The backend is built using Spring Framework. To run the backend, follow the steps below:
     1. Ensure that `JDK-17` is in your path. And `JAVA_HOME` environement variable points to `JDK17`.
     2. Enusre that `docker` is installed in your computer.
-    3. Open the terminal and navigate to the `backend` folder.
-    4. Run the command `mvn clean install` to build the backend. It will build the application and create a docker image.
-    5. Navigate to `backend/target`, then run the command `docker-compose up` to start the backend server.
+    3. Backend server will start at `http://localhost:8080`. Ensure that port `8080` in `localhost` is not busy.
+    4. Open the terminal and navigate to the `backend` folder.
+    5. Run the command `mvn clean install` to build the backend. It will build the application and create a docker image.
+    6. Navigate to `backend/target`, then run the command `docker-compose up` to start the backend server.
 
 ### Assignment - 1 : Develop a Web Application
 #### Part 1: Design your web application
