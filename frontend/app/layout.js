@@ -11,7 +11,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <Navbar />
-        <main className='flex flex-col items-center justify-center min-h-screen py-2'>
+        <main className='col-span-6'>
         {children}
         </main>
       </body>

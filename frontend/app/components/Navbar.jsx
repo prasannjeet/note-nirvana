@@ -20,13 +20,14 @@ const Navbar =  () => {
     },[])
 
   return (
-    <header className="top-0 left-0 w-[22vw] bg-blue-600  p-10 pl-10 text-white fixed h-full sm:w-[25vw]">
-      <div>
-        <div>
-            <Link href={"/"}>
+    <header className="grid grid-cols-7">
+      <aside className="self-start sticky top-0 col-span-1">
+        <div className="px-4">
+            <Link href={"/"} className="font-bold text-lg">
                 Nirvana notes
             </Link>
         </div>
+        <div className="px-4 flex-1 overflow-hidden">
         {
             <div className="mt-4">
           {notes.map((note) => (
@@ -39,7 +40,9 @@ const Navbar =  () => {
               ))}
               </div>
         }
-      </div>
+        </div>
+        
+      </aside>
     </header>
   )
 }
