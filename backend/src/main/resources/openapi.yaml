@@ -4,7 +4,7 @@ info:
   description: Backend server for a note-taking application using Spring Boot and Keycloak for authentication/authorization.
   version: 1.0.0
 servers:
-  - url: 'https://api.example.com/v1'
+  - url: 'http://localhost:8080/v1'
 paths:
   /notes:
     get:
@@ -204,3 +204,5 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+security:
+  - BearerAuth: []
