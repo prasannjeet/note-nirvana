@@ -23,5 +23,15 @@
         "id": 5,
         "title": "Note Five",
         "content": "This is the fifth note"
+    },
+    {
+        "id": 6,
+        "title": "Note Six",
+        "content": "This is the sixth note"
+    },
+    {
+        "id": 7,
+        "title": "Note Seven",
+        "content": "Seven"
     }
 ]
