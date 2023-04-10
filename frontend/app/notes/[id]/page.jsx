@@ -6,8 +6,8 @@ const note = {
 
 const NotePage = async () => {
   return (
-    <div className="w-full">
-      <section className="flex flex-col justify-center content-center items-center w-1/2 mx-auto">
+    <div>
+      <section className="">
         <div>
             <h1>{note.title}</h1>
         </div>

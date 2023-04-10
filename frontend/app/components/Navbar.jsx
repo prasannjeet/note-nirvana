@@ -1,7 +1,7 @@
 'use client'
-
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import {FaPlus} from 'react-icons/fa'
 
 const Navbar =  () => {
     const [notes, setNotes] = useState([])
@@ -20,29 +20,28 @@ const Navbar =  () => {
     },[])
 
   return (
-    <header className="grid grid-cols-7">
-      <aside className="self-start sticky top-0 col-span-1">
+    <header className="flex flex-row justify-between py-4">
         <div className="px-4">
             <Link href={"/"} className="font-bold text-lg">
                 Nirvana notes
             </Link>
+            
         </div>
-        <div className="px-4 flex-1 overflow-hidden">
-        {
-            <div className="mt-4">
-          {notes.map((note) => (
-                <div key={note.id} className="mt-2">
-                  <Link href={`/notes/${note.id}`}>
-                      {note.title}
-                  </Link>
-                </div>
-
-              ))}
-              </div>
-        }
+        <div>
+            <ul className="flex flex-row">
+                <li className="mx-2">
+                    <Link href={"/dashboard"}>Dashboard</Link>
+                </li>
+                <li className="mx-2">
+                    <Link href={"/"}>Profile</Link>
+                </li>
+            </ul>
         </div>
-        
-      </aside>
+        <div className="px-3">
+        <Link href={"/new"} className="flex cursor-pointer bg-green-600 py-2 px-2 rounded-md text-white" onClick={() => console.log("clicked")}>
+                <span>Add note</span> <FaPlus className="mt-1 ml-2" />
+            </Link>
+        </div>
     </header>
   )
 }

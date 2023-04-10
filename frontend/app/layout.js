@@ -11,7 +11,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <Navbar />
-        <main className='col-span-6'>
+        <main>
         {children}
         </main>
       </body>
