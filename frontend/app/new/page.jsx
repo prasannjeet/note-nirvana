@@ -33,7 +33,7 @@ const NewNotePage = () => {
         <label htmlFor="content">Content</label>
         <textarea className='rounded-md h-12 px-2 py-2' name="content" id="content" onChange={(e) => setContent(e.target.value)} />
         <div className='py-4 mx-auto'>
-          <button type='submit' className='bg-green-600 text-white rounded-md py-2 px-2'>Add note</button>
+          <button type='submit' className='bg-green-600 text-white rounded-md py-2 px-2 hover:bg-green-700'>Add note</button>
         </div>
       </form>
     </div>
