@@ -1,4 +1,4 @@
-package com.prasannjeet.notenirvana.service;
+package com.prasannjeet.notenirvana.generated;
 
 import org.springframework.web.context.request.NativeWebRequest;
 

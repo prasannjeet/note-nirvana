@@ -1,5 +1,6 @@
-package com.prasannjeet.notenirvana.service;
+package com.prasannjeet.notenirvana.generated;
 
+import com.prasannjeet.notenirvana.model.CreateNoteRequest;
 import com.prasannjeet.notenirvana.model.Error;
 import com.prasannjeet.notenirvana.model.Note;
 import java.util.UUID;
@@ -18,7 +19,7 @@ import javax.annotation.Generated;
  * A delegate to be called by the {@link NotesApiController}}.
  * Implement this interface with a {@link org.springframework.stereotype.Service} annotated class.
  */
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-09T01:45:12.519646+02:00[Europe/Stockholm]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-10T19:44:21.157130+02:00[Europe/Stockholm]")
 public interface NotesApiDelegate {
 
     default Optional<NativeWebRequest> getRequest() {
@@ -29,14 +30,14 @@ public interface NotesApiDelegate {
      * POST /notes : Create a new note
      *
      * @param authorization Bearer token for authentication (required)
-     * @param note  (required)
+     * @param createNoteRequest  (required)
      * @return Note created (status code 201)
      *         or Bad Request (status code 400)
      *         or Unauthorized (status code 401)
      * @see NotesApi#createNote
      */
     default ResponseEntity<Note> createNote(String authorization,
-        Note note) {
+        CreateNoteRequest createNoteRequest) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
@@ -118,7 +119,7 @@ public interface NotesApiDelegate {
      *
      * @param noteId  (required)
      * @param authorization Bearer token for authentication (required)
-     * @param note  (required)
+     * @param createNoteRequest  (required)
      * @return Note updated (status code 200)
      *         or Bad Request (status code 400)
      *         or Unauthorized (status code 401)
@@ -127,7 +128,7 @@ public interface NotesApiDelegate {
      */
     default ResponseEntity<Note> updateNote(UUID noteId,
         String authorization,
-        Note note) {
+        CreateNoteRequest createNoteRequest) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
