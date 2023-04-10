@@ -20,9 +20,8 @@ const notes = [
 
 const DashboardPage = async () => {
   return (
-    <>
-      <h1>Dashboard</h1>
-      <ul>
+    <div className='grid grid-cols-4'>
+      <ul className='grid grid-col-4'>
         {
           notes.map((note) => (
             <li key={note.id}>
@@ -33,7 +32,7 @@ const DashboardPage = async () => {
           ))
         }
       </ul>
-    </>
+    </div>
   )
 }
 
