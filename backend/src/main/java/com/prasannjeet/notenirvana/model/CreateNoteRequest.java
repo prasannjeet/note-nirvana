@@ -15,72 +15,72 @@ import java.util.*;
 import javax.annotation.Generated;
 
 /**
- * Error
+ * CreateNoteRequest
  */
 @lombok.Data
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-10T19:44:21.157130+02:00[Europe/Stockholm]")
-public class Error {
+public class CreateNoteRequest {
 
-  private String code;
+  private String title;
 
-  private String message;
+  private String content;
 
   /**
    * Default constructor
-   * @deprecated Use {@link Error#Error(String, String)}
+   * @deprecated Use {@link CreateNoteRequest#CreateNoteRequest(String, String)}
    */
   @Deprecated
-  public Error() {
+  public CreateNoteRequest() {
     super();
   }
 
   /**
    * Constructor with only required parameters
    */
-  public Error(String code, String message) {
-    this.code = code;
-    this.message = message;
+  public CreateNoteRequest(String title, String content) {
+    this.title = title;
+    this.content = content;
   }
 
-  public Error code(String code) {
-    this.code = code;
+  public CreateNoteRequest title(String title) {
+    this.title = title;
     return this;
   }
 
   /**
-   * Get code
-   * @return code
+   * Get title
+   * @return title
   */
-  @NotNull 
-  @Schema(name = "code", requiredMode = Schema.RequiredMode.REQUIRED)
-  @JsonProperty("code")
-  public String getCode() {
-    return code;
+  @NotNull @Size(max = 255) 
+  @Schema(name = "title", requiredMode = Schema.RequiredMode.REQUIRED)
+  @JsonProperty("title")
+  public String getTitle() {
+    return title;
   }
 
-  public void setCode(String code) {
-    this.code = code;
+  public void setTitle(String title) {
+    this.title = title;
   }
 
-  public Error message(String message) {
-    this.message = message;
+  public CreateNoteRequest content(String content) {
+    this.content = content;
     return this;
   }
 
   /**
-   * Get message
-   * @return message
+   * Get content
+   * @return content
   */
   @NotNull 
-  @Schema(name = "message", requiredMode = Schema.RequiredMode.REQUIRED)
-  @JsonProperty("message")
-  public String getMessage() {
-    return message;
+  @Schema(name = "content", requiredMode = Schema.RequiredMode.REQUIRED)
+  @JsonProperty("content")
+  public String getContent() {
+    return content;
   }
 
-  public void setMessage(String message) {
-    this.message = message;
+  public void setContent(String content) {
+    this.content = content;
   }
 
   @Override
@@ -91,22 +91,22 @@ public class Error {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Error error = (Error) o;
-    return Objects.equals(this.code, error.code) &&
-        Objects.equals(this.message, error.message);
+    CreateNoteRequest createNoteRequest = (CreateNoteRequest) o;
+    return Objects.equals(this.title, createNoteRequest.title) &&
+        Objects.equals(this.content, createNoteRequest.content);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(code, message);
+    return Objects.hash(title, content);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Error {\n");
-    sb.append("    code: ").append(toIndentedString(code)).append("\n");
-    sb.append("    message: ").append(toIndentedString(message)).append("\n");
+    sb.append("class CreateNoteRequest {\n");
+    sb.append("    title: ").append(toIndentedString(title)).append("\n");
+    sb.append("    content: ").append(toIndentedString(content)).append("\n");
     sb.append("}");
     return sb.toString();
   }
