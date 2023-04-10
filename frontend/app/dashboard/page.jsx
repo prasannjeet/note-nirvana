@@ -18,21 +18,23 @@ const notes = [
     },
 ]
 
-const NotesPage = async () => {
+const DashboardPage = async () => {
   return (
-    <div className="grid">
-      {
-        notes.map((note) => (
-          <Link key={note.id} href={`/notes/${note.id}`}>
-              <div>
-                <h2>{note.title}</h2>
-                <p>{note.content}</p>
-              </div>
-          </Link>
-        ))
-      }
-    </div>
+    <>
+      <h1>Dashboard</h1>
+      <ul>
+        {
+          notes.map((note) => (
+            <li key={note.id}>
+              <Link href={`/notes/${note.id}`}>
+                {note.title}
+              </Link>
+            </li>
+          ))
+        }
+      </ul>
+    </>
   )
 }
 
-export default NotesPage
+export default DashboardPage
