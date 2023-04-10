@@ -30,8 +30,11 @@ const Navbar =  () => {
         <div>
             <ul className="flex flex-row">
                 <li className="mx-2">
-                    <Link href={"/dashboard"}>Dashboard</Link>
+                    <Link href={"/notes"}>Notes</Link>
                 </li>
+                {/* <li className="mx-2">
+                    <Link href={"/dashboard"}>Dashboard</Link>
+                </li> */}
                 <li className="mx-2">
                     <Link href={"/"}>Profile</Link>
                 </li>

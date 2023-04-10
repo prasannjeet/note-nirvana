@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 const note = {
     id: 1,
     title: 'title',
@@ -8,6 +10,7 @@ const NotePage = async () => {
   return (
     <div>
       <section className="">
+        <Link href={"/notes"}>Go back</Link>
         <div>
             <h1>{note.title}</h1>
         </div>
