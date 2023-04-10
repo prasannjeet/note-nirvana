@@ -1,5 +1,6 @@
-package com.prasannjeet.notenirvana.service;
+package com.prasannjeet.notenirvana.generated;
 
+import com.prasannjeet.notenirvana.model.CreateNoteRequest;
 import com.prasannjeet.notenirvana.model.Error;
 import com.prasannjeet.notenirvana.model.Note;
 import java.util.UUID;
@@ -27,7 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-09T01:45:12.519646+02:00[Europe/Stockholm]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-10T19:44:21.157130+02:00[Europe/Stockholm]")
 @Controller
 @RequestMapping("${openapi.noteTakingApp.base-path:/v1}")
 public class NotesApiController implements NotesApi {

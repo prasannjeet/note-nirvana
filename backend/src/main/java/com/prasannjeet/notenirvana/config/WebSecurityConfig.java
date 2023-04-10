@@ -4,6 +4,7 @@ import static org.springframework.http.HttpMethod.GET;
 
 import com.prasannjeet.notenirvana.config.util.JwtAudienceValidator;
 import com.prasannjeet.notenirvana.config.util.JwtAuthConverter;
+import com.prasannjeet.notenirvana.config.util.RolesLoggingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +20,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
 @Configuration
@@ -27,6 +29,7 @@ public class WebSecurityConfig {
 
     public static final String ADMIN = "admin";
     public static final String USER = "user";
+    private static final String DEFAULT_AUDIENCE = "account";
     private final JwtAuthConverter jwtAuthConverter;
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuerUri;
@@ -36,22 +39,26 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
-                .requestMatchers(GET, "/test/anonymous", "/test/anonymous/**").permitAll()
-                .requestMatchers(GET, "/swagger-ui.html/**", "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**", "/v2/api-docs", "/webjars/**", "/csrf").permitAll()
-                .requestMatchers(GET, "/test/admin", "/test/admin/**").hasRole(ADMIN)
-                .requestMatchers(GET, "/test/user").hasAnyRole(ADMIN, USER)
-                .anyRequest().authenticated();
+            .requestMatchers(GET, "/test/anonymous", "/test/anonymous/**").permitAll()
+            .requestMatchers(GET, "/swagger-ui.html/**", "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**", "/v2/api-docs", "/webjars/**", "/csrf").permitAll()
+            .requestMatchers(GET, "/test/admin", "/test/admin/**").hasRole(ADMIN)
+            .requestMatchers(GET, "/test/user").authenticated()
+            .anyRequest().authenticated();
         http.oauth2ResourceServer()
-                .jwt()
-                .jwtAuthenticationConverter(jwtAuthConverter);
+            .jwt()
+            .jwtAuthenticationConverter(jwtAuthConverter);
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        // Add a custom filter to log the user roles
+        http.addFilterBefore(new RolesLoggingFilter(), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
     @Bean
     public JwtDecoder jwtDecoder() {
         NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromIssuerLocation(issuerUri);
-        OAuth2TokenValidator<Jwt> withAudience = new JwtAudienceValidator(resourceId);
+        OAuth2TokenValidator<Jwt> withAudience = new JwtAudienceValidator(DEFAULT_AUDIENCE);
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
         OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(withIssuer, withAudience);
         jwtDecoder.setJwtValidator(validator);
@@ -60,3 +67,4 @@ public class WebSecurityConfig {
 
 }
 
+// hasAnyRole(ADMIN, USER)

@@ -3,8 +3,9 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-package com.prasannjeet.notenirvana.service;
+package com.prasannjeet.notenirvana.generated;
 
+import com.prasannjeet.notenirvana.model.CreateNoteRequest;
 import com.prasannjeet.notenirvana.model.Error;
 import com.prasannjeet.notenirvana.model.Note;
 import java.util.UUID;
@@ -31,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-09T01:45:12.519646+02:00[Europe/Stockholm]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-10T19:44:21.157130+02:00[Europe/Stockholm]")
 @Validated
 @Controller
 @Tag(name = "notes", description = "the notes API")
@@ -45,7 +46,7 @@ public interface NotesApi {
      * POST /notes : Create a new note
      *
      * @param authorization Bearer token for authentication (required)
-     * @param note  (required)
+     * @param createNoteRequest  (required)
      * @return Note created (status code 201)
      *         or Bad Request (status code 400)
      *         or Unauthorized (status code 401)
@@ -76,9 +77,9 @@ public interface NotesApi {
     )
     default ResponseEntity<Note> createNote(
         @NotNull @Parameter(name = "Authorization", description = "Bearer token for authentication", required = true, in = ParameterIn.HEADER) @RequestHeader(value = "Authorization", required = true) String authorization,
-        @Parameter(name = "Note", description = "", required = true) @Valid @RequestBody Note note
+        @Parameter(name = "CreateNoteRequest", description = "", required = true) @Valid @RequestBody CreateNoteRequest createNoteRequest
     ) {
-        return getDelegate().createNote(authorization, note);
+        return getDelegate().createNote(authorization, createNoteRequest);
     }
 
 
@@ -199,7 +200,7 @@ public interface NotesApi {
      *
      * @param noteId  (required)
      * @param authorization Bearer token for authentication (required)
-     * @param note  (required)
+     * @param createNoteRequest  (required)
      * @return Note updated (status code 200)
      *         or Bad Request (status code 400)
      *         or Unauthorized (status code 401)
@@ -235,9 +236,9 @@ public interface NotesApi {
     default ResponseEntity<Note> updateNote(
         @Parameter(name = "noteId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("noteId") UUID noteId,
         @NotNull @Parameter(name = "Authorization", description = "Bearer token for authentication", required = true, in = ParameterIn.HEADER) @RequestHeader(value = "Authorization", required = true) String authorization,
-        @Parameter(name = "Note", description = "", required = true) @Valid @RequestBody Note note
+        @Parameter(name = "CreateNoteRequest", description = "", required = true) @Valid @RequestBody CreateNoteRequest createNoteRequest
     ) {
-        return getDelegate().updateNote(noteId, authorization, note);
+        return getDelegate().updateNote(noteId, authorization, createNoteRequest);
     }
 
 }
