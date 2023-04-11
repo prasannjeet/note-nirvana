@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-10T19:44:21.157130+02:00[Europe/Stockholm]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-11T15:05:04.035681+02:00[Europe/Stockholm]")
 @Controller
 @RequestMapping("${openapi.noteTakingApp.base-path:/v1}")
 public class NotesApiController implements NotesApi {
