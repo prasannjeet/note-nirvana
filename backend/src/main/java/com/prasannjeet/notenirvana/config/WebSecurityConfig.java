@@ -76,7 +76,7 @@ public class WebSecurityConfig {
     http.addFilterBefore(corsFilter, ChannelProcessingFilter.class);
 
     // Enable CORS with the custom configuration
-//    http.cors();
+    //    http.cors();
 
     return http.build();
   }
@@ -84,7 +84,12 @@ public class WebSecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost:3000/", "http://localhost:3000")); // Allow all origins
+    configuration.setAllowedOrigins(
+        List.of(
+            "http://localhost:3000/",
+            "http://localhost:3000",
+            "https://notenirvana.ooguy.com/",
+            "https://notenirvana.ooguy.com"));
     configuration.setAllowedMethods(List.of("*")); // Allow all methods (GET, POST, etc.)
     configuration.setAllowedHeaders(List.of("*")); // Allow all headers
     configuration.setAllowCredentials(true); // Allow credentials
