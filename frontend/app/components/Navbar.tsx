@@ -1,10 +1,18 @@
 'use client'
-// Not needed in a TSX file, remove this line
+
 import Link from "next/link";
 import {useState, useEffect} from "react";
 import {FaPlus} from "react-icons/fa";
 import {useNextKeycloakAuth} from "@krashnakant/next-keycloak";
 import {KeycloakLoginOptions} from "keycloak-js";
+
+type MyNote = {
+    id: string;
+    title: string;
+    content: string;
+    createdAt: number;
+    updatedAt: number;
+};
 
 const Navbar = () => {
     const [notes, setNotes] = useState([]);
@@ -27,17 +35,29 @@ const Navbar = () => {
         console.log("logging in");
         login(option);
     };
-
     useEffect(() => {
         const fetchNotes = async () => {
-            const res = await fetch("/api/notes");
-            const data = await res.json();
+            console.log("fetching notes");
+            const res = await fetch(`https://nirvana.ooguy.com/api/v1/notes`, {
+                headers: {
+                    Accept: "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const data: MyNote[] = await res.json();
+
             setNotes(data);
             setIsLoading(false);
         };
+        console.log(authenticated ? "authenticated" : "not authenticated");
+        if (authenticated) {
+            fetchNotes().catch((err) => {
+                alert("Error fetching notes, or no notes exist. Please try again later. Check console for error.")
+                console.log(err)
+            });
+        }
+    }, [authenticated, token]);
 
-        fetchNotes();
-    }, []);
 
     return (
         <header className="flex flex-row justify-between py-4">
@@ -65,10 +85,14 @@ const Navbar = () => {
                             </li>
                         </>
                     ) : (
-                        <li className="mx-2">
-                            <button onClick={handleLogin}>Login</button>
-                            <button onClick={() => register()}>Register</button>
-                        </li>
+                        <>
+                            <li className="mx-2">
+                                <button onClick={handleLogin}>Login</button>
+                            </li>
+                            <li className="mx-2">
+                                <button onClick={() => register()}>Register</button>
+                            </li>
+                        </>
                     )}
                 </ul>
             </div>
