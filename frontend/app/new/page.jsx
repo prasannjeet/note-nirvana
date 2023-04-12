@@ -10,7 +10,8 @@ const NewNotePage = () => {
 
  const router = useRouter()
 
-  const { token, authenticated } = useNextKeycloakAuth();
+  const { token } = useNextKeycloakAuth();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
