@@ -9,10 +9,12 @@ const NewNotePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    const res = await fetch('/api/notes', {
+    const res = await fetch('https://nirvana.ooguy.com/api/v1/notes', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         title,

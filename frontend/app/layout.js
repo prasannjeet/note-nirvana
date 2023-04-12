@@ -2,6 +2,7 @@
 import Navbar from './components/Navbar'
 import './globals.css'
 import {NextKeycloakAuthProvider} from "@krashnakant/next-keycloak";
+import { SessionProvider } from "next-auth/react";
 
 // export const metadata = {
 //     title: 'Nirvana Notes',
@@ -16,20 +17,20 @@ const config = {
 
 const initOption = {
     onLoad: 'check-sso',
-    silentCheckSsoRedirectUri:
-        'http://localhost:3000/silent-check-sso.html',
+    /* silentCheckSsoRedirectUri:
+        'http://localhost:3000/silent-check-sso.html', */
 };
 
-export default function RootLayout({children}) {
+export default function RootLayout({children, session}) {
     return (
         <html lang="en">
         <body>
-        <NextKeycloakAuthProvider config={config} initOption={initOption}>
+        <SessionProvider session={session}>
             <Navbar/>
             <main>
                 {children}
             </main>
-        </NextKeycloakAuthProvider>
+        </SessionProvider>
         </body>
         </html>
     )
