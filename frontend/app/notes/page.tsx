@@ -26,6 +26,7 @@ const NotesPage = () => {
                     },
                 });
                 const data = await res.json();
+                console.log("DATA",data)
                 setNotes(data);
             } else {
                 alert("User is not authenticated. Login first to fetch your notes.");
@@ -39,6 +40,8 @@ const NotesPage = () => {
         const date = new Date(timestamp * 1000);
         return `${date.getDate()} ${date.toLocaleString("default", { month: "long" })}`;
     };
+
+    console.log("notes", notes)
 
     return (
         <div className="grid grid-cols-4">
