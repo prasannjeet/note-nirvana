@@ -17,8 +17,8 @@ const config = {
 
 const initOption = {
     onLoad: 'check-sso',
-    silentCheckSsoRedirectUri:
-        'http://localhost:3000/silent-check-sso.html',
+    /* silentCheckSsoRedirectUri:
+        'http://localhost:3000/silent-check-sso.html', */
 };
 
 export default function RootLayout({children, session}) {

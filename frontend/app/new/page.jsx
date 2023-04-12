@@ -1,10 +1,16 @@
 'use client'
 
 import {useState} from 'react'
+import {useNextKeycloakAuth} from "@krashnakant/next-keycloak";
+import { useRouter } from 'next/navigation';
 
 const NewNotePage = () => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+
+ const router = useRouter()
+
+  const { token, authenticated } = useNextKeycloakAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -23,7 +29,12 @@ const NewNotePage = () => {
     })
 
     const data = await res.json()
+    
     console.log("Submitted DATA:",data);
+
+    if (data) {
+      router.push(`/notes`)
+    }
 
   }
 
