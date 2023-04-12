@@ -17,20 +17,20 @@ const config = {
 
 const initOption = {
     onLoad: 'check-sso',
-    /* silentCheckSsoRedirectUri:
-        'http://localhost:3000/silent-check-sso.html', */
+    silentCheckSsoRedirectUri:
+        'http://localhost:3000/silent-check-sso.html',
 };
 
 export default function RootLayout({children, session}) {
     return (
         <html lang="en">
         <body>
-        <SessionProvider session={session}>
+        <NextKeycloakAuthProvider config={config} initOption={initOption}>
             <Navbar/>
             <main>
                 {children}
             </main>
-        </SessionProvider>
+        </NextKeycloakAuthProvider>
         </body>
         </html>
     )
