@@ -49,7 +49,6 @@ const Navbar = () => {
             setNotes(data);
             setIsLoading(false);
         };
-        console.log(authenticated ? "authenticated" : "not authenticated");
         if (authenticated) {
             fetchNotes().catch((err) => {
                 alert("Error fetching notes, or no notes exist. Please try again later. Check console for error.")
