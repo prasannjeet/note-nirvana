@@ -32,7 +32,10 @@ const NotesPage = () => {
             }
         };
 
-        fetchNotes();
+        fetchNotes().catch((err) => {
+            alert("Error fetching notes, or no notes exist. Please try again later. Check console for error.")
+            console.log(err)
+        });
     }, [token, authenticated]);
 
     const formatDate = (timestamp: number) => {
