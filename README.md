@@ -30,6 +30,47 @@ With a sleek and intuitive interface, Note Nirvana makes it easy to create, edit
     5. Run the command `mvn clean install` to build the backend. It will build the application and create a docker image.
     6. Navigate to `backend/target`, then run the command `docker-compose up` to start the backend server.
 
+# Note Nirvana Application Architecture
+
+The Note Nirvana application is a note-taking app that provides basic CRUDL (Create, Read, Update, Delete, List) functionalities, such as adding, editing, deleting, and retrieving notes. The architecture of the application is designed and deployed in a Kubernetes cluster, ensuring scalability and high availability. The following sections describe the components and their relationships in detail, referring to the annotations in the architecture diagram.
+
+## Kubernetes Cluster
+
+The entire application is deployed within a Kubernetes cluster, which ensures optimal resource allocation, scaling, and management of the app's components. The Kubernetes cluster consists of the following components: Traefik (1), Ingress (2), notenirvana-front (3), notenirvana-service (4), MySQL Database (5), Keycloak (6), and their respective dependencies.
+
+### 1. Traefik
+
+Traefik is a modern HTTP reverse proxy and load balancer used to handle ingress routes in the Kubernetes cluster. It's responsible for routing external requests to the appropriate services within the cluster, managing SSL certificates, and solving the ACME challenge from Let's Encrypt.
+
+### 2. Ingress
+
+Ingress is a Kubernetes component that manages external access to the services within the cluster. In this architecture, Traefik is configured to work with Ingress for handling incoming traffic and routing it to the appropriate internal services. These services include the frontend at `https://notenirvana.ooguy.com`, the backend at `https://nirvana.ooguy.com`, and Keycloak at `https://keycloak.ooguy.com`.
+
+### 3. notenirvana-front
+
+The frontend of the Note Nirvana application (3) is built using the Next.js framework (8) and is deployed as a separate pod within the Kubernetes cluster. The frontend communicates with the backend (notenirvana-service) for all its operations, including CRUDL functionalities for notes. The frontend also interacts with Keycloak for authentication and authorization purposes.
+
+### 4. notenirvana-service
+
+The backend of the application (4) is called notenirvana-service and is built using the Spring Boot framework (9). It is deployed as a separate pod within the Kubernetes cluster. The notenirvana-service handles all the business logic for the application, including note management and user authentication. It communicates with the MySQL database (5) for storing and retrieving notes and with Keycloak (6) for user authentication and authorization.
+
+### 5. MySQL Database
+
+The MySQL database (5) is used for storing notes for each user. It is deployed as a separate pod within the Kubernetes cluster and is connected to the notenirvana-service (4). The MySQL database pod is hosted internally with a cluster IP and cannot be accessed from outside the cluster. A PersistentVolumeClaim (PVC) (7) is used to store the data in the MySQL database, ensuring data persistence even if the pod is restarted.
+
+### 6. Keycloak
+
+Keycloak (6) is an open-source identity and access management solution that handles user authentication and authorization. In this architecture, Keycloak is deployed as a separate pod within the Kubernetes cluster. Both the frontend (notenirvana-front) and the backend (notenirvana-service) communicate with Keycloak for authentication and authorization purposes. Keycloak ensures that only authenticated users can access their notes and perform CRUDL operations.
+
+## Dockerization and Deployment
+
+All the four services (frontend, backend, MySQL database, and Keycloak) are first dockerized, and the resulting Docker images are deployed in the Kubernetes cluster. This approach ensures that each component can be easily updated, scaled, and managed independently.
+
+# Conclusion
+
+The Note Nirvana application architecture consists of a Kubernetes cluster hosting multiple components, including the frontend, backend, MySQL database, and Keycloak. Traefik and Ingress handle incoming traffic, while the frontend and backend services provide the core functionality of the application. The architecture is designed for high availability, scalability, and efficient resource management.
+
+---
 ### Assignment - 1 : Develop a Web Application
 #### Part 1: Design your web application
 - Explain the purpose of the application
