@@ -1,16 +1,48 @@
+'use client'
+
+import {useState, useEffect} from 'react'
 import Link from "next/link"
 import { FaArrowLeft, FaEdit, FaTrash } from "react-icons/fa"
+import {useNextKeycloakAuth} from "@krashnakant/next-keycloak";
 
-const note = {
-    id: 1,
-    title: 'title',
-    content: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Placeat tenetur quasi rerum maiores illo laborum ullam dolores ut perferendis in similique veniam magni ipsam eum, inventore minima repellat quae veritatis!',
-}
 
-const NotePage = async () => {
+const NotePage = async ({params: {id}}) => {
+    const [note, setNote] = useState();
+
+    const { token, authenticated } = useNextKeycloakAuth();
+
+    console.log(id)
+    
+    useEffect(() => {
+        const fetchNote = async () => {
+            if (authenticated) {
+                const res = await fetch(`https://nirvana.ooguy.com/api/v1/notes/${id}`, {
+                headers: {
+                    Accept: "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+            const data = await res.json();
+                console.log("DATA",data)
+                setNote(data);
+            } else {
+                console.log("error")
+            }
+        }
+        console.log(note)
+        fetchNote().catch((err) => {
+            alert("Error fetching notes, or no notes exist. Please try again later. Check console for error.")
+            console.log(err)
+        });
+    },[token, authenticated])
+
+
+
+
     return (
         <>
-            <div className="mx-4 my-4 flex justify-between">
+
+            {/* <div className="mx-4 my-4 flex justify-between">
                 <Link className="py-4 px-4 bg-gray-400 rounded-md text-white" href={"/notes"}>
                     <FaArrowLeft />
                 </Link>
@@ -26,7 +58,7 @@ const NotePage = async () => {
                 <div className="w-1/2">
                     <p>{note.content}</p>
                 </div>
-            </section>
+            </section> */}
         </>
     )
 }
