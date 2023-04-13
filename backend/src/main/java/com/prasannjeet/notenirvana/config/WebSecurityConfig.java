@@ -75,9 +75,6 @@ public class WebSecurityConfig {
     // Add the CORS filter directly to the security filter chain
     http.addFilterBefore(corsFilter, ChannelProcessingFilter.class);
 
-    // Enable CORS with the custom configuration
-    //    http.cors();
-
     return http.build();
   }
 

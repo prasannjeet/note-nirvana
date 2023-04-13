@@ -1,15 +1,15 @@
 {
   "name": "notenirvana",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "docker:build": "docker build -t prasannjeet/${npm_package_name}:${npm_package_version} .",
+    "docker:build": "docker build -t prasannjeet/${npm_package_name}:${npm_package_version} -f docker/Dockerfile .",
     "docker:start": "docker run -p 3000:3000 prasannjeet/${npm_package_name}:${npm_package_version}",
-    "docker:push": "docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag prasannjeet/${npm_package_name}:${npm_package_version} ."
+    "docker:push": "docker buildx build --push --platform linux/arm64/v8,linux/amd64 -f docker/Dockerfile --tag prasannjeet/${npm_package_name}:${npm_package_version} ."
   },
   "dependencies": {
     "@krashnakant/next-keycloak": "^1.0.0",
