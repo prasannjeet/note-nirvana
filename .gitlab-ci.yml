@@ -17,7 +17,7 @@ docker-build:
     - docker:dind
   before_script:
     # Docker login
-    - docker login -u "prasannjeet" -p "$DOCKER_HUB_PASSWORD"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - apk add --update --no-cache maven openjdk17
     - cd backend
