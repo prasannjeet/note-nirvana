@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notenirvana-frontend
+  namespace: 4me307
+spec:
+  selector:
+    matchLabels:
+      app: notenirvana-frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: notenirvana-frontend
+    spec:
+      containers:
+        - name: notenirvana-frontend
+          image: __FRONTEND_IMAGE__
+          imagePullPolicy: Always
+          ports:
+            - name: main
+              containerPort: 3000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notenirvana-frontend-service
+  namespace: 4me307
+  labels:
+    app: notenirvana-frontend
+spec:
+  ports:
+    - port: 3000
+  selector:
+    app: notenirvana-frontend
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: notenirvana-frontend-route
+  namespace: 4me307
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - match: Host(`notenirvana.ooguy.com`)
+      kind: Rule
+      services:
+        - name: notenirvana-frontend-service
+          port: 3000
+  tls:
+    certResolver: dynu
