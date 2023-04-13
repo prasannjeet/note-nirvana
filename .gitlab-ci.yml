@@ -9,15 +9,14 @@
 #
 # This template uses one generic job with conditional builds
 # for the default branch and all other (MR) branches.
-
 docker-build:
   image: docker:latest
   stage: build
   services:
     - docker:dind
   before_script:
-    # Docker login
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    # Docker login using --password-stdin
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
   script:
     - apk add --update --no-cache maven openjdk17
     - cd backend
