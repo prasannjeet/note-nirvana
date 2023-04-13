@@ -6,7 +6,7 @@ import {FaPlus} from "react-icons/fa";
 import {useNextKeycloakAuth} from "@krashnakant/next-keycloak";
 import {KeycloakLoginOptions} from "keycloak-js";
 
-type MyNote = {
+export type MyNote = {
     id: string;
     title: string;
     content: string;
@@ -28,6 +28,13 @@ const Navbar = () => {
         hasRealmRole,
     } = useNextKeycloakAuth();
 
+    const userProfileUrl = () => {
+        const baseUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL;
+        const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REAM;
+        return `${baseUrl}/realms/${realm}/account/`;
+    };
+
+
     const handleLogin = () => {
         const option: KeycloakLoginOptions = {
             redirectUri: window.location.origin,
@@ -35,27 +42,6 @@ const Navbar = () => {
         console.log("logging in");
         login(option);
     };
-    useEffect(() => {
-        const fetchNotes = async () => {
-            console.log("fetching notes");
-            const res = await fetch(`https://nirvana.ooguy.com/api/v1/notes`, {
-                headers: {
-                    Accept: "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            const data: MyNote[] = await res.json();
-
-            setNotes(data);
-            setIsLoading(false);
-        };
-        if (authenticated) {
-            fetchNotes().catch((err) => {
-                alert("Error fetching notes, or no notes exist. Please try again later. Check console for error.")
-                console.log(err)
-            });
-        }
-    }, [authenticated, token]);
 
 
     return (
@@ -73,7 +59,7 @@ const Navbar = () => {
                     {authenticated ? (
                         <>
                             <li className="mx-2">
-                                <Link href={"/"}>Profile</Link>
+                                <a href={userProfileUrl()} target="_blank" rel="noopener noreferrer">User Profile</a>
                             </li>
                             <li className="mx-2">
                                 <button
