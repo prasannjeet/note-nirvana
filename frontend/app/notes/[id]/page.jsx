@@ -4,12 +4,15 @@ import {useState, useEffect} from 'react'
 import Link from "next/link"
 import { FaArrowLeft, FaEdit, FaTrash } from "react-icons/fa"
 import {useNextKeycloakAuth} from "@krashnakant/next-keycloak";
+import { useRouter } from 'next/navigation';
 
 
 const NotePage = ({ params: { id } }) => {
     const [note, setNote] = useState();
 
     const { token, authenticated } = useNextKeycloakAuth();
+
+    const router = useRouter()
 
     console.log('Single Note Page');
     console.log(id);
@@ -38,6 +41,19 @@ const NotePage = ({ params: { id } }) => {
         });
     }, [token, authenticated]);
 
+    // delete note
+    const handleDelete = async () => {
+        const res = await fetch(`https://nirvana.ooguy.com/api/v1/notes/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        router.push(`/notes`)
+    }
+
 
 
     return (
@@ -49,7 +65,7 @@ const NotePage = ({ params: { id } }) => {
                             <FaArrowLeft />
                         </Link>
                         <div className="flex">
-                            <FaTrash className="mr-4" />
+                            <FaTrash className="mr-4" onClick={handleDelete} />
                             <FaEdit />
                         </div>
                     </div>
