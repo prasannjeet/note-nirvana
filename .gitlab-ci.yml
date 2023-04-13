@@ -14,6 +14,8 @@ docker-build:
   stage: build
   services:
     - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
   before_script:
     # Docker login using --password-stdin
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
