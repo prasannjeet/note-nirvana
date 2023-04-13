@@ -19,6 +19,7 @@
         <java.version>17</java.version>
         <spring.version>3.0.5</spring.version>
         <springdoc.version>1.7.0</springdoc.version>
+        <skipDocker>false</skipDocker>
     </properties>
 
     <dependencies>
@@ -302,6 +303,7 @@
                             <goal>push</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipDocker}</skip>
                             <tag>${project.version}</tag>
                             <username>prasannjeet</username>
                             <repository>prasannjeet/${project.artifactId}</repository>
