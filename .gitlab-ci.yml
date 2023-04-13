@@ -15,16 +15,16 @@ docker-build:
   stage: build
   services:
     - docker:dind
-  script:
-    # Install Docker CLI
-    - yum update -y && yum install -y yum-utils && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    - yum install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin && systemctl start docker
+  before_script:
     # Docker login
     - docker login -u "prasannjeet" -p "$DOCKER_HUB_PASSWORD"
+  script:
     - cd backend
-    - mvn clean install
+    # Skip the dockerfile-maven-plugin by adding -Ddockerfile.skip
+    - mvn clean install -Ddockerfile.skip
     - repository=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
     - version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+    - docker build -t prasannjeet/$repository:$version target/
     - docker push prasannjeet/$repository:$version
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
