@@ -9,26 +9,85 @@
 #
 # This template uses one generic job with conditional builds
 # for the default branch and all other (MR) branches.
-docker-build:
-  image: docker:latest
-  stage: build
-  services:
-    - name: docker:23.0.1-dind
-      alias: docker
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
-  before_script:
-    # Docker login using --password-stdin
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+stages:
+  - backend-build
+  - backend-docker-build
+  - frontend-build
+  - frontend-docker-build
+
+backend-build:
+  image: maven:3.8.4-openjdk-17
+  stage: backend-build
   script:
-    - apk add --update --no-cache maven openjdk17
     - cd backend
-    # Skip the dockerfile-maven-plugin by adding -Ddockerfile.skip
     - mvn clean install -DskipDocker=true
-    - repository=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
-    - version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-    - docker build -t prasannjeet/$repository:$version target/
-    - docker push prasannjeet/$repository:$version
+    - mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout > artifactId.txt
+    - mvn help:evaluate -Dexpression=project.version -q -DforceStdout > version.txt
+  artifacts:
+    paths:
+      - backend/target/Dockerfile
+      - backend/target/*.jar
+      - backend/target/*.yml
+      - backend/artifactId.txt
+      - backend/version.txt
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+backend-docker-build:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  stage: backend-docker-build
+  script:
+    # Build and push the Docker image using Kaniko
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - repository=$(cat backend/artifactId.txt)
+    - version=$(cat backend/version.txt)
+    - cp backend/target/Dockerfile Dockerfile
+    - cp backend/target/*.jar ./
+    - cp backend/target/*.yml ./
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE/$repository:$version
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  needs:
+    - backend-build
+
+frontend-build:
+  image: node:16.8-alpine
+  stage: frontend-build
+  script:
+    - cd frontend
+    - npm ci
+    - npm run build
+    - echo $(npm pkg get version) | tr -d '"' > version.txt
+    - echo $(npm pkg get name) | tr -d '"' > repository.txt
+  artifacts:
+    paths:
+      - frontend/.next
+      - frontend/public
+      - frontend/package.json
+      - frontend/package-lock.json
+      - frontend/version.txt
+      - frontend/repository.txt
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+frontend-docker-build:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  stage: frontend-docker-build
+  script:
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - cd frontend
+    - repository=$(cat repository.txt)
+    - version=$(cat version.txt)
+    - mkdir build-context
+    - cp docker/Dockerfile.build build-context/Dockerfile
+    - cp -r .next package*.json public build-context/
+    - cd build-context
+    - /kaniko/executor --context $CI_PROJECT_DIR/frontend/build-context --dockerfile $CI_PROJECT_DIR/frontend/build-context/Dockerfile --destination $CI_REGISTRY_IMAGE/$repository:$version
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  needs:
+    - frontend-build

@@ -1,0 +1,21 @@
+# Use the official Node.js image as the base image
+FROM node:16.8-alpine
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json into the working directory
+COPY package*.json ./
+
+# Install production dependencies
+RUN npm ci --only=production
+
+# Copy the .next folder and any other necessary files (e.g., public folder)
+COPY .next .next
+COPY public public
+
+# Expose the port the application will run on
+EXPOSE 3000
+
+# Start the application
+CMD ["npm", "run", "start"]
