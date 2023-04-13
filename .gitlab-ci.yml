@@ -11,7 +11,7 @@
 # for the default branch and all other (MR) branches.
 
 docker-build:
-  image: maven:3.8.3-amazoncorretto-17
+  image: docker:latest
   stage: build
   services:
     - docker:dind
@@ -19,9 +19,10 @@ docker-build:
     # Docker login
     - docker login -u "prasannjeet" -p "$DOCKER_HUB_PASSWORD"
   script:
+    - apk add --update --no-cache maven openjdk17
     - cd backend
     # Skip the dockerfile-maven-plugin by adding -Ddockerfile.skip
-    - mvn clean install -Ddockerfile.skip
+    - mvn clean install -DskipDocker=true
     - repository=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
     - version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
     - docker build -t prasannjeet/$repository:$version target/
