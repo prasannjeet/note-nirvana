@@ -17,27 +17,21 @@ const NotePage = ({ params: { id } }) => {
 
     const router = useRouter()
 
-    console.log('Single Note Page');
-    console.log(id);
-
     useEffect(() => {
-        console.log('Fetching single note');
         const fetchNote = async () => {
             if (authenticated) {
-                const res = await fetch(`https://nirvana.ooguy.com/api/v1/notes/${id}`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/notes/${id}`, {
                     headers: {
                         Accept: 'application/json',
                         Authorization: `Bearer ${token}`,
                     },
                 });
                 const data = await res.json();
-                console.log('DATA', data);
                 setNote(data);
             } else {
                 console.log('error');
             }
         };
-        console.log(note);
         fetchNote().catch((err) => {
             alert('Error fetching notes, or no notes exist. Please try again later. Check console for error.');
             console.log(err);
@@ -46,7 +40,7 @@ const NotePage = ({ params: { id } }) => {
 
     // delete note
     const handleDelete = async () => {
-        const res = await fetch(`https://nirvana.ooguy.com/api/v1/notes/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/notes/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -64,7 +58,7 @@ const NotePage = ({ params: { id } }) => {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        const res = await fetch(`https://nirvana.ooguy.com/api/v1/notes/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/notes/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -79,8 +73,6 @@ const NotePage = ({ params: { id } }) => {
 
         const data = await res.json()
         setNote(data)
-        console.log("Submitted DATA:",data);
-
         if (data) {
             router.push(`/notes/${id}`)
             setEditForm(false)

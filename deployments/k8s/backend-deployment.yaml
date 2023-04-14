@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: note-nirvana-service
-        image: __BACKEND_IMAGE__
+        image: gitlab.lnu.se:5050/ps222vt/internet-architectures/notenirvana:dev-SNAPSHOT
         imagePullPolicy: Always
         envFrom:
           - configMapRef:

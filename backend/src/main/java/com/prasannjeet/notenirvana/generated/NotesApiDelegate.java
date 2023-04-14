@@ -19,7 +19,7 @@ import javax.annotation.Generated;
  * A delegate to be called by the {@link NotesApiController}}.
  * Implement this interface with a {@link org.springframework.stereotype.Service} annotated class.
  */
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-14T01:11:05.887598+02:00[Europe/Stockholm]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-18T00:46:06.249952+02:00[Europe/Stockholm]")
 public interface NotesApiDelegate {
 
     default Optional<NativeWebRequest> getRequest() {

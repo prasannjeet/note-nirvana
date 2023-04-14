@@ -1,26 +1,32 @@
-# This file is a template, and might need editing before it works on your project.
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Docker.gitlab-ci.yml
-
-# Build a Docker image with CI/CD and push to the GitLab registry.
-# Docker-in-Docker documentation: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
-#
-# This template uses one generic job with conditional builds
-# for the default branch and all other (MR) branches.
 stages:
   - backend-build
   - backend-docker-build
   - frontend-build
-  - frontend-docker-build
+  - frontend-build-prod
+  - update-gitops
+  - create-release
+  - trigger-webhooks
+  - update-prod-container
+
+variables:
+  RELEASE_TAG_PATTERN: '^release (\d+\.\d+\.\d+)$'
 
 backend-build:
-  image: maven:3.8.4-openjdk-17
+  image: maven:3.8.4-openjdk-17-slim
   stage: backend-build
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-maven"
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
   script:
-    - cd backend
-    - mvn clean install -DskipDocker=true
+    - apt-get update && apt-get install -y curl && curl -sL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
+    - cd frontend
+    - echo $(npm pkg get version) | tr -d '"' > version.txt
+    - echo $(npm pkg get name) | tr -d '"' > repository.txt
+    - cd ../backend
+    - export MAVEN_OPTS="-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+    - mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout
+    - mvn clean install -DskipDocker=true -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
     - mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout > artifactId.txt
     - mvn help:evaluate -Dexpression=project.version -q -DforceStdout > version.txt
   artifacts:
@@ -30,8 +36,13 @@ backend-build:
       - backend/target/*.yml
       - backend/artifactId.txt
       - backend/version.txt
+      - frontend/version.txt
+      - frontend/repository.txt
   rules:
+    - if: '$CI_COMMIT_MESSAGE !~ /\[skip-ci\]/'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+      when: never
 
 backend-docker-build:
   image:
@@ -40,54 +51,181 @@ backend-docker-build:
   stage: backend-docker-build
   script:
     # Build and push the Docker image using Kaniko
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"username\":\"$DOCKER_REGISTRY_USER\",\"password\":\"$DOCKER_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
     - repository=$(cat backend/artifactId.txt)
     - version=$(cat backend/version.txt)
     - cp backend/target/Dockerfile Dockerfile
     - cp backend/target/*.jar ./
     - cp backend/target/*.yml ./
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE/$repository:$version
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $DOCKER_REGISTRY_USER/$repository:$version
+    - if echo "$CI_COMMIT_MESSAGE" | grep -q -E "$RELEASE_TAG_PATTERN"; then release_version=$(echo "$CI_COMMIT_MESSAGE" | grep -o -E "\d+\.\d+\.\d+") && /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $DOCKER_REGISTRY_USER/$repository:$release_version; fi
+
   rules:
+    - if: '$CI_COMMIT_MESSAGE !~ /\[skip-ci\]/'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+      when: never
   needs:
     - backend-build
 
 frontend-build:
-  image: node:16.8-alpine
-  stage: frontend-build
-  script:
-    - cd frontend
-    - npm ci
-    - npm run build
-    - echo $(npm pkg get version) | tr -d '"' > version.txt
-    - echo $(npm pkg get name) | tr -d '"' > repository.txt
-  artifacts:
-    paths:
-      - frontend/.next
-      - frontend/public
-      - frontend/package.json
-      - frontend/package-lock.json
-      - frontend/version.txt
-      - frontend/repository.txt
-  rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-
-frontend-docker-build:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
-  stage: frontend-docker-build
+  stage: frontend-build
   script:
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
     - cd frontend
+    - sed -e "s|REPLACE_REALM|${NEXT_PUBLIC_KEYCLOAK_REALM}|g" -e "s|REPLACE_URL|${NEXT_PUBLIC_KEYCLOAK_URL}|g" -e "s|REPLACE_CLIENT_ID|${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}|g" -e "s|REPLACE_BACKEND_URL|${NEXT_PUBLIC_BACKEND_URL}|g" .env.example > .env
     - repository=$(cat repository.txt)
     - version=$(cat version.txt)
-    - mkdir build-context
-    - cp docker/Dockerfile.build build-context/Dockerfile
-    - cp -r .next package*.json public build-context/
-    - cd build-context
-    - /kaniko/executor --context $CI_PROJECT_DIR/frontend/build-context --dockerfile $CI_PROJECT_DIR/frontend/build-context/Dockerfile --destination $CI_REGISTRY_IMAGE/$repository:$version
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"username\":\"$DOCKER_REGISTRY_USER\",\"password\":\"$DOCKER_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --cache=false --context $CI_PROJECT_DIR/frontend --dockerfile $CI_PROJECT_DIR/frontend/Dockerfile --destination $DOCKER_REGISTRY_USER/$repository:$version
+  needs:
+    - backend-build
+  rules:
+    - if: '$CI_COMMIT_MESSAGE !~ /\[skip-ci\]/'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+      when: never
+
+frontend-build-prod:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  stage: frontend-build-prod
+  script:
+    - cd frontend
+    - repository=$(cat repository.txt)
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"username\":\"$DOCKER_REGISTRY_USER\",\"password\":\"$DOCKER_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - sed -e "s|REPLACE_REALM|${NEXT_PUBLIC_KEYCLOAK_REALM}|g" -e "s|REPLACE_URL|${NEXT_PUBLIC_KEYCLOAK_URL}|g" -e "s|REPLACE_CLIENT_ID|${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}|g" -e "s|REPLACE_BACKEND_URL|${NEXT_PUBLIC_BACKEND_URL_PROD}|g" .env.example > .env
+    - if echo "$CI_COMMIT_MESSAGE" | grep -q -E "$RELEASE_TAG_PATTERN"; then release_version=$(echo "$CI_COMMIT_MESSAGE" | grep -o -E "\d+\.\d+\.\d+") && /kaniko/executor --cache=false --context $CI_PROJECT_DIR/frontend --dockerfile $CI_PROJECT_DIR/frontend/Dockerfile --destination $DOCKER_REGISTRY_USER/$repository:$release_version; fi
+
+  needs:
+    - backend-build
+  rules:
+    - if: '$CI_COMMIT_MESSAGE !~ /\[skip-ci\]/'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+      when: never
+
+update-gitops:
+  image: alpine:3.17.3
+  stage: update-gitops
+  before_script:
+    - apk update
+    - apk add git openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+  script:
+    - FRONTEND_IMAGE=$(cat frontend/repository.txt)
+    - FRONTEND_VERSION=$(cat frontend/version.txt)
+    - BACKEND_IMAGE=$(cat backend/artifactId.txt)
+    - BACKEND_VERSION=$(cat backend/version.txt)
+    - apk add --no-cache bash
+    - git clone git@gitlab.lnu.se:ps222vt/internet-architectures.git repo
+    - cd repo
+    - git pull
+    - cd deployments
+    - chmod +x update-deployment-images.sh
+    - sh update-deployment-images.sh $CI_REGISTRY_IMAGE/$FRONTEND_IMAGE:$FRONTEND_VERSION $CI_REGISTRY_IMAGE/$BACKEND_IMAGE:$BACKEND_VERSION
+  environment:
+    name: staging
+  needs:
+    - backend-docker-build
+    - backend-build
+    - frontend-build
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_MESSAGE !~ /\[skip-ci\]/'
+    - if: '$CI_COMMIT_TAG'
+      when: never
+
+create-release:
+  image: alpine:3.14.3
+  stage: create-release
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-maven"
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  before_script:
+    - apk update
+    - apk add curl git maven nodejs npm openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - curl --location --output /usr/local/bin/release-cli "https://gitlab.com/api/v4/projects/gitlab-org%2Frelease-cli/packages/generic/release-cli/latest/release-cli-linux-amd64"
+    - chmod +x /usr/local/bin/release-cli
+  script:
+    - '[[ ! echo "$CI_COMMIT_MESSAGE" | grep -q -E "$RELEASE_TAG_PATTERN" ]] && { echo "Commit message does not match release format. Skipping this job."; exit 0; } || true'
+    - RELEASE_VERSION=$(echo "$CI_COMMIT_MESSAGE" | grep -oE "\d+\.\d+\.\d+")
+    - git clone git@gitlab.lnu.se:ps222vt/internet-architectures.git repo
+    - cd repo
+    - git checkout -b "release-$RELEASE_VERSION"
+    - CHANGELOG_FILE="changelog/${RELEASE_VERSION}.md"
+    - DESCRIPTION=$( [ -f "${CHANGELOG_FILE}" ] && cat "${CHANGELOG_FILE}" || echo "Release ${RELEASE_VERSION}" )
+    - cd backend
+    - export MAVEN_OPTS="-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+    - mvn versions:set -DnewVersion="$RELEASE_VERSION" -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+    - git add .
+    - cd ../frontend
+    - npm version --new-version "$RELEASE_VERSION" --no-git-tag-version
+    - git add package.json
+    - git commit -m "Tag frontend and backend version to $RELEASE_VERSION [skip-ci]"
+    - git push git@gitlab.lnu.se:ps222vt/internet-architectures.git "release-$RELEASE_VERSION"
+    - git tag -a "v$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+    - git push git@gitlab.lnu.se:ps222vt/internet-architectures.git "v$RELEASE_VERSION"
+    - TAG_COMMIT_SHA=$(git rev-parse "release-$RELEASE_VERSION")
+    - git push --delete git@gitlab.lnu.se:ps222vt/internet-architectures.git "release-$RELEASE_VERSION"
+    - release-cli create --name "Release $RELEASE_VERSION" --description "$DESCRIPTION" --tag-name "v$RELEASE_VERSION" --ref "$TAG_COMMIT_SHA" --released-at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
   needs:
     - frontend-build
+    - frontend-build-prod
+    - backend-docker-build
+  rules:
+    - if: '$CI_COMMIT_MESSAGE =~ /^release \d+\.\d+\.\d+$/'
+    - if: '$CI_COMMIT_MESSAGE !~ /\[skip-ci\]/'
+    - if: '$CI_COMMIT_TAG'
+      when: never
+
+trigger-webhooks:
+  image: curlimages/curl:8.00.1
+  stage: trigger-webhooks
+  script:
+    - 'curl -X POST "https://portainerbe.1cooldns.com/api/stacks/webhooks/e1e9c77f-1177-4678-9cc2-7f510952ab59"'
+  needs:
+    - frontend-build
+    - backend-docker-build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_MESSAGE !~ /\[skip-ci\]/'
+    - if: '$CI_COMMIT_TAG'
+      when: never
+
+update-prod-container:
+  stage: update-prod-container
+  image: alpine:3.17.3
+  before_script:
+    - apk add --no-cache jq bash yq curl
+  script:
+    - '[[ ! echo "$CI_COMMIT_MESSAGE" | grep -q -E "$RELEASE_TAG_PATTERN" ]] && { echo "Commit message does not match release format. Skipping this job."; exit 0; } || true'
+    - chmod +x ./deployments/update-prod-container.sh
+    - RELEASE_VERSION=$(echo "$CI_COMMIT_MESSAGE" | grep -oE "\d+\.\d+\.\d+")
+    - FRONTEND_IMAGE=$(cat frontend/repository.txt)
+    - BACKEND_IMAGE=$(cat backend/artifactId.txt)
+    - ./deployments/update-prod-container.sh "notenirvana-front" "$DOCKER_REGISTRY_USER/$FRONTEND_IMAGE:$RELEASE_VERSION" "my-notenirvana" "$DOCKER_REGISTRY_USER/$BACKEND_IMAGE:$RELEASE_VERSION"
+  needs:
+    - create-release
+    - backend-build
+    - frontend-build-prod
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_MESSAGE !~ /\[skip-ci\]/'
+    - if: '$CI_COMMIT_TAG'
+      when: never

@@ -43,6 +43,7 @@ keycloak-config:
   keycloakPublicKey: ${KEYCLOAK_PUBLIC_KEY}
   keycloakClientId: ${KEYCLOAK_CLIENT_ID}
   keycloakClientSecret: ${KEYCLOAK_CLIENT_SECRET}
+  allowedOrigins: ${ALLOWED_ORIGINS}
 
 #keycloak:
 #  auth-server-url: ${KEYCLOAK_SCHEME}://${KEYCLOAK_AUTH_SERVER}:${KEYCLOAK_AUTH_PORT}

@@ -39,7 +39,7 @@ With a sleek and intuitive interface, Note Nirvana makes it easy to create, edit
     5. Run the command `mvn clean install` to build the backend. It will build the application and create a docker image.
     6. Navigate to `backend/target`, then run the command `docker-compose up` to start the backend server.
 
-## Note Nirvana Component Diagram
+## Note Nirvana Component-Diagram
 
 ![Image Description](./diagrams/component_diagram.png)
 

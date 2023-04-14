@@ -19,14 +19,13 @@ const NotesPage = () => {
     useEffect(() => {
         const fetchNotes = async () => {
             if (authenticated) {
-                const res = await fetch(`https://nirvana.ooguy.com/api/v1/notes`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/notes`, {
                     headers: {
                         Accept: "application/json",
                         Authorization: `Bearer ${token}`,
                     },
                 });
                 const data = await res.json();
-                console.log("DATA",data)
                 setNotes(data);
             } else {
                 alert("User is not authenticated. Login first to fetch your notes.");
@@ -43,8 +42,6 @@ const NotesPage = () => {
         const date = new Date(timestamp * 1000);
         return `${date.getDate()} ${date.toLocaleString("default", { month: "long" })}`;
     };
-
-    console.log("notes", notes)
 
     return (
         <div className="grid grid-cols-4">

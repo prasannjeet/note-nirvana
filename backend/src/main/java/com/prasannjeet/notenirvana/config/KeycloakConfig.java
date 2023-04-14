@@ -20,4 +20,5 @@ public class KeycloakConfig {
     private String keycloakAuthServer;
     private String keycloakAuthPort;
     private String keycloakRealmName;
+    private String allowedOrigins;
 }

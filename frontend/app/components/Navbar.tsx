@@ -30,16 +30,20 @@ const Navbar = () => {
 
     const userProfileUrl = () => {
         const baseUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL;
-        const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REAM;
+        const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM;
         return `${baseUrl}/realms/${realm}/account/`;
     };
 
 
     const handleLogin = () => {
+        // console.log(`NEXT_PUBLIC_KEYCLOAK_REALM=${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}`);
+        // console.log(`NEXT_PUBLIC_KEYCLOAK_URL=${process.env.NEXT_PUBLIC_KEYCLOAK_URL}`);
+        // console.log(`NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}`);
+        // console.log(`NEXT_PUBLIC_BACKEND_URL=${process.env.NEXT_PUBLIC_BACKEND_URL}`);
+        // alert(`Click OK to login.`);
         const option: KeycloakLoginOptions = {
             redirectUri: window.location.origin,
         };
-        console.log("logging in");
         login(option);
     };
 

@@ -10,7 +10,7 @@ import { SessionProvider } from "next-auth/react";
 // }
 
 const config = {
-    realm: process.env.NEXT_PUBLIC_KEYCLOAK_REAM,
+    realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM,
     url: process.env.NEXT_PUBLIC_KEYCLOAK_URL,
     clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID,
 };

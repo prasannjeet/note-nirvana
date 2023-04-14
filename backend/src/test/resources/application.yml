@@ -19,3 +19,6 @@ jwt:
     converter:
       resource-id: note-nirvana
       principal-attribute: preferred_username
+
+keycloak-config:
+  allowedOrigins: http://localhost:3000/,http://localhost:3000

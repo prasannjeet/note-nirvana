@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: notenirvana-frontend
-          image: __FRONTEND_IMAGE__
+          image: gitlab.lnu.se:5050/ps222vt/internet-architectures/notenirvana-front:dev-SNAPSHOT
           imagePullPolicy: Always
           ports:
             - name: main

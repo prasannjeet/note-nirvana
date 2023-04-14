@@ -15,8 +15,8 @@ const NewNotePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    const res = await fetch('https://nirvana.ooguy.com/api/v1/notes', {
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/notes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,8 +30,6 @@ const NewNotePage = () => {
     })
 
     const data = await res.json()
-    
-    console.log("Submitted DATA:",data);
 
     if (data) {
       router.push(`/notes`)
