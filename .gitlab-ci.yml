@@ -9,29 +9,6 @@
 #
 # This template uses one generic job with conditional builds
 # for the default branch and all other (MR) branches.
-docker-build:
-  image: docker:latest
-  stage: build
-  services:
-    - name: docker:23.0.1-dind
-      alias: docker
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
-  before_script:
-    # Docker login using --password-stdin
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
-  script:
-    - apk add --update --no-cache maven openjdk17
-    - cd backend
-    # Skip the dockerfile-maven-plugin by adding -Ddockerfile.skip
-    - mvn clean install -DskipDocker=true
-    - repository=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
-    - version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-    - docker build -t prasannjeet/$repository:$version target/
-    - docker push prasannjeet/$repository:$version
-  rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 stages:
   - backend-build
   - backend-docker-build
