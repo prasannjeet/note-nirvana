@@ -19,7 +19,7 @@ import javax.annotation.Generated;
  */
 @lombok.Data
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-11T18:41:38.172435+02:00[Europe/Stockholm]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-14T01:11:05.887598+02:00[Europe/Stockholm]")
 public class Error {
 
   private String code;

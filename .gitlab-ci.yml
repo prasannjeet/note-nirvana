@@ -32,3 +32,85 @@ docker-build:
     - docker push prasannjeet/$repository:$version
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+stages:
+  - backend-build
+  - backend-docker-build
+  - frontend-build
+  - frontend-docker-build
+
+backend-build:
+  image: maven:3.8.4-openjdk-17
+  stage: backend-build
+  script:
+    - cd backend
+    - mvn clean install -DskipDocker=true
+    - mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout > artifactId.txt
+    - mvn help:evaluate -Dexpression=project.version -q -DforceStdout > version.txt
+  artifacts:
+    paths:
+      - backend/target/Dockerfile
+      - backend/target/*.jar
+      - backend/target/*.yml
+      - backend/artifactId.txt
+      - backend/version.txt
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+backend-docker-build:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  stage: backend-docker-build
+  script:
+    # Build and push the Docker image using Kaniko
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - repository=$(cat backend/artifactId.txt)
+    - version=$(cat backend/version.txt)
+    - cp backend/target/Dockerfile Dockerfile
+    - cp backend/target/*.jar ./
+    - cp backend/target/*.yml ./
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE/$repository:$version
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  needs:
+    - backend-build
+
+frontend-build:
+  image: node:16.8-alpine
+  stage: frontend-build
+  script:
+    - cd frontend
+    - npm ci
+    - npm run build
+    - echo $(npm pkg get version) | tr -d '"' > version.txt
+    - echo $(npm pkg get name) | tr -d '"' > repository.txt
+  artifacts:
+    paths:
+      - frontend/.next
+      - frontend/public
+      - frontend/package.json
+      - frontend/package-lock.json
+      - frontend/version.txt
+      - frontend/repository.txt
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+frontend-docker-build:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  stage: frontend-docker-build
+  script:
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - cd frontend
+    - repository=$(cat repository.txt)
+    - version=$(cat version.txt)
+    - mkdir build-context
+    - cp docker/Dockerfile.build build-context/Dockerfile
+    - cp -r .next package*.json public build-context/
+    - cd build-context
+    - /kaniko/executor --context $CI_PROJECT_DIR/frontend/build-context --dockerfile $CI_PROJECT_DIR/frontend/build-context/Dockerfile --destination $CI_REGISTRY_IMAGE/$repository:$version
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  needs:
+    - frontend-build
