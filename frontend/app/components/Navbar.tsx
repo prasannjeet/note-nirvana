@@ -72,6 +72,9 @@ const Navbar = () => {
                                     Logout
                                 </button>
                             </li>
+                            <li className="mx-2 user-label">
+                                <p>Welcome {userInfo.name} ({userInfo.email})</p>
+                            </li>
                         </>
                     ) : (
                         <>

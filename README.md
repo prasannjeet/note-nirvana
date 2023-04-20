@@ -1,13 +1,30 @@
 ## 23VT-4ME307 Internet Architectures
 
+### Development (Staging) Environments:
+```
 ### Access FrontEnd:
-https://notenirvana.ooguy.com
+https://notenirvana.1cooldns.com
 
 ### Access Backend:
-https://nirvana.ooguy.com
+https://nirvana.1cooldns.com
+```
 
-### Keycloak:
-https://keycloak.ooguy.com:8443
+### Production Environment:
+```
+### Access FrontEnd:
+https://notenirvana.4cloud.click
+
+### Access Backend:
+https://nirvana.4cloud.click
+```
+
+## Pipeline:
+1. Any commit to the `main` branch triggers the build. If successful, builds are then deployed to the `staging` environment.
+2. Any commit to the `main` branch with the format `release x.x.x`, where x is a digit, will also trigger a build, but it will also create a release candidate, it will create a new `tag`, with version `x.x.x`, changelogs will be fetched from the location `changelog/x.x.x.md`, and the release will be created.
+3. The release will then be deployed the `production` environment.
+4. Everything is automated with no manual intervention.
+5. For minor commits in `main` branch, it can be done with a commit that ends with `[skip-ci]`, which will ensure that a build is not triggered.
+6. Erroneous commits will result in a built being failed and it will then not be deployed.
 
 ## Note Nirvana - a Note Taking App
 Note Nirvana is a web-based note-taking app that helps you stay organized and on top of your ideas. 
@@ -25,19 +42,27 @@ With a sleek and intuitive interface, Note Nirvana makes it easy to create, edit
 3. Sudeesh Sukumara Pillai
 4. Gauthem Krishna
 
-### Steps to run the application
-1. The `frontend` folder contains the code for the frontend of the application. The frontend is built using NextJS. To run the frontend, follow the steps below:
-    1. Open the terminal and navigate to the `frontend` folder.
-    2. Run the command `npm install` to install all the dependencies.
-    3. Run the command `npm start` to start the frontend server.
-    4. The frontend server will start on port 3000. Open the browser and navigate to `http://localhost:3000` to view the frontend.
-2. The `backend` folder contains the code for the backend of the application. The backend is built using Spring Framework. To run the backend, follow the steps below:
-    1. Ensure that `JDK-17` is in your path. And `JAVA_HOME` environement variable points to `JDK17`.
-    2. Enusre that `docker` is installed in your computer.
-    3. Backend server will start at `http://localhost:8080`. Ensure that port `8080` in `localhost` is not busy.
-    4. Open the terminal and navigate to the `backend` folder.
-    5. Run the command `mvn clean install` to build the backend. It will build the application and create a docker image.
-    6. Navigate to `backend/target`, then run the command `docker-compose up` to start the backend server.
+### Steps to run the application.
+**Enusre that `docker` is installed in your computer.**
+
+#### FrontEnd
+The `frontend` folder contains the code for the frontend of the application. The frontend is built using NextJS. To run the frontend, follow the steps below:
+
+ 1. Open the terminal and navigate to the `frontend` folder.
+ 2. Run the command `npm run docker:build` to build the docker container.
+ 3. Run the command `npm run docker:start` to start the frontend server.
+ 4. The frontend server will start on port 3000. Open the browser and navigate to `http://localhost:3000` to view the frontend.
+
+#### BackEnd
+The `backend` folder contains the code for the backend of the application. The backend is built using Spring Framework. To run the backend, follow the steps below:
+
+ 1. Ensure that `JDK-17` is in your path. And `JAVA_HOME` environement variable points to `JDK17`.
+ 2. Backend server will start at `http://localhost:8080`. Ensure that port `8080` in `localhost` is not busy.
+ 3. Open the terminal and navigate to the `backend` folder.
+ 4. Run the command `mvn clean install` to build the backend. It will build the application and create a docker image.
+ 5. Navigate to `backend/target`, then run the command `docker-compose up` to start the backend server.
+
+Note that you might need environemnt variables so that things run without any error. Contact this group to get appropriate variables.
 
 ## Note Nirvana Component-Diagram
 
