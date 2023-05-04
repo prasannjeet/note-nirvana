@@ -615,3 +615,6 @@ pip-selfcheck.json
 **/ps222vt_key_ssh.pem
 **/**.pem
 **/**.tfplan
+
+# Don't send these files
+./envvars.sh
