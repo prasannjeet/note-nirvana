@@ -614,3 +614,4 @@ pip-selfcheck.json
 # Don't send keys
 **/ps222vt_key_ssh.pem
 **/**.pem
+**/**.tfplan
