@@ -202,3 +202,22 @@ resource "openstack_compute_floatingip_associate_v2" "associate_floatingip_1" {
   floating_ip = openstack_networking_floatingip_v2.floatingip_1.address
   instance_id = openstack_compute_instance_v2.jumpmachine.id
 }
+
+# Save IP Addresses into file
+resource "null_resource" "save_ips" {
+  depends_on = [
+    openstack_compute_instance_v2.jumpmachine,
+    openstack_compute_instance_v2.webserver,
+    openstack_compute_instance_v2.database,
+    openstack_networking_floatingip_v2.floatingip_1
+  ]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "jumpmachine ${openstack_networking_port_v2.port_1.fixed_ip.0.ip_address}" > local_ips.txt
+      echo "webserver ${openstack_networking_port_v2.port_2.fixed_ip.0.ip_address}" >> local_ips.txt
+      echo "database ${openstack_networking_port_v2.port_3.fixed_ip.0.ip_address}" >> local_ips.txt
+      echo "${openstack_networking_floatingip_v2.floatingip_1.address}" > floating_ip.txt
+    EOT
+  }
+}
