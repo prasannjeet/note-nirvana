@@ -5,7 +5,7 @@ variable "user_domain_name" {}
 variable "password" {}
 variable "auth_url" {}
 variable "region" {}
-variable "user_keyPiar" {}
+variable "user_keyPair" {}
 
 # Define required providers
 terraform {
@@ -152,7 +152,7 @@ resource "openstack_compute_instance_v2" "jumpmachine" {
   name            = "jumpmachine"
   flavor_name     = "c4-r8-d80"
   image_id        = "f73ec00b-6ea9-456b-a182-736b53e78e06"
-  key_pair        = "${var.user_keyPiar}"
+  key_pair        = "${var.user_keyPair}"
   security_groups = ["default",openstack_compute_secgroup_v2.ssh.name,openstack_compute_secgroup_v2.http.name, openstack_compute_secgroup_v2.https.name, openstack_compute_secgroup_v2.tcp.name]
 
     network {
@@ -167,7 +167,7 @@ resource "openstack_compute_instance_v2" "webserver" {
   name            = "webserver"
   flavor_name     = "c4-r8-d80"
   image_id        = "f73ec00b-6ea9-456b-a182-736b53e78e06"
-  key_pair        = "${var.user_keyPiar}"
+  key_pair        = "${var.user_keyPair}"
   security_groups = ["default",openstack_compute_secgroup_v2.ssh.name,openstack_compute_secgroup_v2.http.name, openstack_compute_secgroup_v2.https.name, openstack_compute_secgroup_v2.tcp.name]
 network {
     name = "network"
@@ -183,7 +183,7 @@ resource "openstack_compute_instance_v2" "database" {
   name            = "database"
   flavor_name     = "c4-r8-d80"
   image_id        = "f73ec00b-6ea9-456b-a182-736b53e78e06"
-  key_pair        = "${var.user_keyPiar}"
+  key_pair        = "${var.user_keyPair}"
   security_groups = ["default",openstack_compute_secgroup_v2.ssh.name,openstack_compute_secgroup_v2.http.name, openstack_compute_secgroup_v2.https.name, openstack_compute_secgroup_v2.tcp.name]
   network {
     name = "network"
