@@ -11,8 +11,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://keycloak.ooguy.com:8443/realms/timetable-oauth
-          jwk-set-uri: https://keycloak.ooguy.com:8443/realms/timetable-oauth/protocol/openid-connect/certs
+          issuer-uri: https://dummy.keycloak.com/auth/realms/testrealm
+          jwk-set-uri: https://dummy.keycloak.com/auth/realms/testrealm/protocol/openid-connect/certs
 
 jwt:
   auth:
