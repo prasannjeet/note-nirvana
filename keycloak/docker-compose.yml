@@ -1,20 +1,32 @@
-version: "2.0"
+version: '3.8'
 services:
   keycloak:
-    image: prasannjeet/keycloak-int-arch:latest
     container_name: keycloak
-    ports:
-      - "8443:8443"
+    image: quay.io/keycloak/keycloak:19.0.1
+    # restart: unless-stopped
+    env_file:
+      - ./keycloak-postgres.env
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=change_me
+      KC_FEATURES:
+        authorization
+        token-exchange
+        docker
+        impersonation
+        scripts
+        upload-scripts
+        web-authn
+        client-policies
+        dynamic-scopes
+    entrypoint: /opt/keycloak/bin/kc.sh start --auto-build --db=postgres
+    volumes:
+      - ./keycloak_data/keycloak.local+5.pem:/opt/keycloak/conf/server.crt.pem
+      - ./keycloak_data/keycloak.local+5-key.pem:/opt/keycloak/conf/server.key.pem
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=Host(`keycloak.ooguy.com`)"
       - "traefik.http.routers.keycloak.entrypoints=websecure"
       - "traefik.http.services.keycloak.loadbalancer.server.port=8443"
       - "traefik.http.routers.keycloak.service=keycloak"
-      - "traefik.http.routers.keycloak.tls.certresolver=dynu"
 
 networks:
   default:
