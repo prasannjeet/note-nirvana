@@ -103,7 +103,7 @@ _Note: Make sure to destroy the resources after use to avoid unnecessary costs._
 ---
 # Terraform Infrastructure Setup
 
-This Terraform setup creates a network infrastructure on OpenStack, which includes creating security groups, a private network, a subnet, a router, and three instances: a jump server, a web server, and a database server. The instances are associated with the required security groups, and a floating IP is assigned to the jump server.
+This Terraform setup creates a network infrastructure on OpenStack, which includes creating security groups, a private network, a subnet, a router, and three instances: a jump server, a web server, and a database server. The instances are associated with the required security groups, and a floating IP is assigned to the jump server. When the settings are applied, the code also saves the local ip addresses of each of the machines and the floating ip address of the jump machine to a text file.
 
 ## Prerequisites
 
