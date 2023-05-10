@@ -1,0 +1,15 @@
+---
+- name: Install Ansible on jumpmachine
+  hosts: jumpmachine
+  become: yes
+  tasks:
+
+    - name: Add Ansible PPA
+      apt_repository:
+        repo: "ppa:ansible/ansible"
+        state: present
+
+    - name: Install Ansible
+      apt:
+        name: ansible
+        state: present

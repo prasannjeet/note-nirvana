@@ -608,8 +608,13 @@ pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,terraform
 
-# Don't send tfplan
+# Don't send tfplan and other terraform files
 **/.tfplan
+terraform/ansible.cfg
+terraform/inventory.ini
+terraform/.terraform.lock.hcl
+terraform/floating_ip.txt
+terraform/local_ips.txt
 
 # Don't send keys
 **/ps222vt_key_ssh.pem

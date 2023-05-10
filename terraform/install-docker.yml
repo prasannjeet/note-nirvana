@@ -1,0 +1,26 @@
+- name: Install Docker CE
+  hosts: all_instances
+  remote_user: ubuntu
+  become: 'yes'
+  tasks:
+    - name: Add to key
+      apt_key:
+        url: 'https://download.docker.com/linux/ubuntu/gpg'
+        id: 0EBFCD88
+        state: present
+    - name: Add to apt repo
+      apt_repository:
+        repo: 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable'
+        filename: docker
+        update_cache: 'yes'
+        state: present
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+    - name: Add Ubuntu to docker-group
+      user:
+        name: ubuntu
+        groups: docker
+        append: 'yes'

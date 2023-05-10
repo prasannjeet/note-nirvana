@@ -1,3 +1,0 @@
-jumpmachine 
-webserver 
-database 

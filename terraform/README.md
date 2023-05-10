@@ -38,7 +38,7 @@ To get started, you'll need the following installed:
 	export TF_VAR_password="<pssword>"
 	export TF_VAR_auth_url="https://cscloud.lnu.se:5000/v3"
 	export TF_VAR_region="RegionOne"
-	export TF_VAR_user_keyPiar="<key-pair-name>"
+	export TF_VAR_user_keyPair="<key-pair-name>"
 	```
     
 For the `your_key_ssh.pem` file, you can read the file content and set it as an environment variable by running the following command:
