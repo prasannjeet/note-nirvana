@@ -1,4 +1,4 @@
-- name: Install Docker CE
+- name: Install Docker CE and MySQL
   hosts: all_instances
   remote_user: ubuntu
   become: 'yes'
@@ -24,3 +24,52 @@
         name: ubuntu
         groups: docker
         append: 'yes'
+
+    - name: Installing Mysql  and dependencies
+      when: inventory_hostname == 'database'
+      become: yes
+      package:
+        name: "{{item}}"
+        state: present
+        update_cache: yes
+      loop:
+        - mysql-server
+        - mysql-client 
+        - python3-mysqldb
+        - libmysqlclient-dev
+        
+    - name: start and enable mysql service
+      when: inventory_hostname == 'database'
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+    - name: creating mysql user (medium_post)
+      when: inventory_hostname == 'database'
+      mysql_user:
+        name: "{{mysql_user}}"
+        password: "{{ mysql_user_password }}"
+        priv: '*.*:ALL'
+        host: '%'
+        state: present
+    - name: creating medium_db
+      when: inventory_hostname == 'database'
+      mysql_db:
+        name: "{{mysql_database}}"
+        state: present
+    - name: Enable remote login to mysql
+      when: inventory_hostname == 'database'
+      lineinfile:
+        path: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regexp: '^bind-address'
+        line: 'bind-address = 0.0.0.0'
+        backup: yes
+      notify:
+        - Restart mysql
+
+  handlers:
+    - name: Restart mysql
+      when: inventory_hostname == 'database'
+      service:
+        name: mysql
+        state: restarted

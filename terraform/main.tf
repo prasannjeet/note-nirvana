@@ -7,6 +7,11 @@ variable "auth_url" {}
 variable "region" {}
 variable "user_keyPair" {}
 
+variable "mysql_root_password" {}
+variable "mysql_user" {}
+variable "mysql_user_password" {}
+variable "mysql_database" {}
+
 # Define required providers
 terraform {
 required_version = ">= 0.14.0"
@@ -48,14 +53,18 @@ resource "openstack_compute_secgroup_v2" "ssh" {
 resource "openstack_compute_secgroup_v2" "http" {
     name        = "http"
     description = "http"
-
     rule {
         from_port   = 81
         to_port     = 81
         ip_protocol = "tcp"
         cidr        = "0.0.0.0/0"
     }
-  
+    rule {
+      from_port   = 3000
+      to_port     = 3000
+      ip_protocol = "tcp"
+      cidr        = "0.0.0.0/0"
+  }
 }
 
 # Create a security group for https
@@ -290,8 +299,47 @@ resource "null_resource" "install_docker" {
     command = <<-EOT
       scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no install-docker.yml ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/install-docker.yml
       scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no inventory.ini ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/inventory.ini
-      ssh -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'ANSIBLE_SSH_ARGS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" ansible-playbook -i /home/ubuntu/inventory.ini --limit instances /home/ubuntu/install-docker.yml'
+      ssh -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'ANSIBLE_SSH_ARGS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" ansible-playbook -i /home/ubuntu/inventory.ini --limit instances /home/ubuntu/install-docker.yml -e "mysql_root_password=${var.mysql_root_password} mysql_user=${var.mysql_user} mysql_user_password=${var.mysql_user_password} mysql_database=${var.mysql_database}"'
     EOT
+  }
+}
+
+resource "null_resource" "deploy_frontend" {
+  depends_on = [
+    openstack_compute_instance_v2.jumpmachine,
+    null_resource.jumpmachine_provisioning,
+    null_resource.install_docker
+    ]
+  
+  provisioner "local-exec" {
+    command = "rsync -e 'ssh -i ${var.user_keyPair}.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' -az --exclude-from='${path.module}/../frontend/.gitignore' ${path.module}/../frontend/ ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/frontend/"
+  }
+
+  provisioner "file" {
+    content     = templatefile("env.template", { backend_url = "http://${openstack_networking_floatingip_v2.floatingip_1.address}:8080/api/v1" })
+    destination = "/home/ubuntu/frontend/.env"
+
+    connection {
+      type        = "ssh"
+      host        = openstack_networking_floatingip_v2.floatingip_1.address
+      user        = "ubuntu"
+      private_key = file("${var.user_keyPair}.pem")
+    }
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "cd /home/ubuntu/frontend",
+      "docker build -t prasannjeet/notenirvana-front:dev-SNAPSHOT-Jump -f docker/Dockerfile .",
+      "docker run -d -p 3000:3000 prasannjeet/notenirvana-front:dev-SNAPSHOT-Jump"
+    ]
+
+    connection {
+      type        = "ssh"
+      host        = openstack_networking_floatingip_v2.floatingip_1.address
+      user        = "ubuntu"
+      private_key = file("${var.user_keyPair}.pem")
+    }
   }
 }
 
