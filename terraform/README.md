@@ -48,9 +48,10 @@ To get started, you'll need the following installed:
 	```
 
 4. Ensure that `rsync` in installed in your computer. If not, run `brew install rsync` to install (for mac). We use rsync to copy files to jumpmachine based on the `.gitignore` file.
-5. *Inportant:* _Rename Your Key File:_ Ensure that your key file (.pem file) is located in the terraform folder. Please note that the file name of the key file must be the same as the environment variable `TF_VAR_user_keyPair`. Also ensure that it has 600 permissions: `chmod 800 key_file.pem`.
-6. Ensure that the executable file `generate_ansible_files.sh` has been given `+x` permission. `sudo chmod +x ./generate_ansible_files.sh`. 
+5. **Important:** _Rename Your Key File:_ Ensure that your key file (.pem file) is located in the terraform folder. Please note that the file name of the key file must be the same as the environment variable `TF_VAR_user_keyPair`. Also ensure that it has 600 permissions: `chmod 600 key_file.pem`.
+6. Ensure that the executable file `generate_ansible_files.sh` and `add-keycloak-cors.sh` has been given `+x` permission. `sudo chmod +x ./generate_ansible_files.sh` and `sudo chmod +x ./add-keycloak-cors.sh`.
 7. Ensure that the id of your default security group is added in the env variable `TF_VAR_default_sg_id`. Furthermore, ensure that ports `3000`, `8080` and `22` are not already open in your default security group, as we will configure it via terraform. If they are open already, just delete them before running this file.
+8. Ensure that the id of your public network in cscloud is added to the env variable `TF_VAR_public_network_id`. You can find the id in your cscloud account.
 
 ## Deploy the Infrastructure
 

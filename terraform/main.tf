@@ -399,3 +399,25 @@ resource "local_file" "endpoints" {
     keycloak-url: https://keycloak.ooguy.com
   EOF
 }
+
+resource "null_resource" "update_keycloak_client" {
+  triggers = {
+    floating_ip = openstack_networking_floatingip_v2.floatingip_1.address
+  }
+
+  provisioner "local-exec" {
+    command = "bash add-keycloak-cors.sh ${format(
+      "http://cscloud%s-%s.lnu.se:3000",
+      substr(element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 2), -1, 1),
+      element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
+    )}"
+  }
+
+  provisioner "local-exec" {
+    command = "bash add-keycloak-cors.sh ${format(
+      "http://cscloud%s-%s.lnu.se:3000/*",
+      substr(element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 2), -1, 1),
+      element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
+    )}"
+  }
+}
