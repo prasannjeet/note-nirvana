@@ -38,34 +38,35 @@ To get started, you'll need the following installed:
 	export TF_VAR_password="<pssword>"
 	export TF_VAR_auth_url="https://cscloud.lnu.se:5000/v3"
 	export TF_VAR_region="RegionOne"
-	export TF_VAR_user_keyPair="<key-pair-name>"
+	export TF_VAR_user_keyPair="<key-pair-name for all instances in cscloud>"
+	export TF_VAR_default_sg_id="<id of default security group in cscloud>"
+	export TF_VAR_public_network_id="<id of public network in cscloud>"
+	export TF_VAR_mysql_root_password=password
+	export TF_VAR_mysql_user=user
+	export TF_VAR_mysql_user_password=password
+	export TF_VAR_mysql_database=database
 	```
-    
-For the `your_key_ssh.pem` file, you can read the file content and set it as an environment variable by running the following command:
-    
-```
-export TF_VAR_ssh_key_private="$(cat ~/.ssh/location/of/key/file.pem)"
-```
+
+4. Ensure that `rsync` in installed in your computer. If not, run `brew install rsync` to install (for mac). We use rsync to copy files to jumpmachine based on the `.gitignore` file.
+5. *Inportant:* _Rename Your Key File:_ Ensure that your key file (.pem file) is located in the terraform folder. Please note that the file name of the key file must be the same as the environment variable `TF_VAR_user_keyPair`. Also ensure that it has 600 permissions: `chmod 800 key_file.pem`.
+6. Ensure that the executable file `generate_ansible_files.sh` has been given `+x` permission. `sudo chmod +x ./generate_ansible_files.sh`. 
+7. Ensure that the id of your default security group is added in the env variable `TF_VAR_default_sg_id`. Furthermore, ensure that ports `3000`, `8080` and `22` are not already open in your default security group, as we will configure it via terraform. If they are open already, just delete them before running this file.
 
 ## Deploy the Infrastructure
 
 1.  Verify the Terraform plan:
     
 ```
-terraform plan
+terraform plan -out="my_plan.tfplan"
 ```
     
 2.  Apply the Terraform configuration:
     
 ```
-terraform apply
+terraform apply "my_plan.tfplan"
 ```
     
-3.  After the infrastructure is deployed, you can use `terraform output` to display the floating IP address of the jump server:
-    
-```
-terraform output
-```
+3. After everythign is provisioned, It will create "endpoints.txt" file with url's to visit the app's frontend as well as backend.
 
 ## Infrastructure Overview
 

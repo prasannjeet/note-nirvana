@@ -6,6 +6,8 @@ variable "password" {}
 variable "auth_url" {}
 variable "region" {}
 variable "user_keyPair" {}
+variable "default_sg_id" {}
+variable "public_network_id" {}
 
 variable "mysql_root_password" {}
 variable "mysql_user" {}
@@ -34,65 +36,36 @@ provider "openstack" {
   region            = "${var.region}"
 }
 
-
-# Create a security group for SSH access
-resource "openstack_compute_secgroup_v2" "ssh" {
-  name        = "ssh"
-  description = "ssh"
-
-  rule {
-    from_port   = 22
-    to_port     = 22
-    ip_protocol = "tcp"
-    cidr        = "0.0.0.0/0"
-  }
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_ssh" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 22
+  port_range_max    = 22
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = var.default_sg_id
 }
 
-
-# Create a security group for http
-resource "openstack_compute_secgroup_v2" "http" {
-    name        = "http"
-    description = "http"
-    rule {
-        from_port   = 81
-        to_port     = 81
-        ip_protocol = "tcp"
-        cidr        = "0.0.0.0/0"
-    }
-    rule {
-      from_port   = 3000
-      to_port     = 3000
-      ip_protocol = "tcp"
-      cidr        = "0.0.0.0/0"
-  }
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_custom_port_3000" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 3000
+  port_range_max    = 3000
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = var.default_sg_id
 }
 
-# Create a security group for https
-resource "openstack_compute_secgroup_v2" "https" {
-    name        = "https"
-    description = "htps"
-
-    rule {
-        from_port   = 443
-        to_port     = 443
-        ip_protocol = "tcp"
-        cidr        = "0.0.0.0/0"
-    }
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_custom_port_8080" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 8080
+  port_range_max    = 8080
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = var.default_sg_id
 }
 
-# Create a security group for tcp
-resource "openstack_compute_secgroup_v2" "tcp" {
-    name        = "tcp"
-    description = "tcp"
-
-   rule {
-    from_port   = 80
-    to_port     = 80
-    ip_protocol = "tcp"
-    cidr        = "0.0.0.0/0"
-  }
-
-}
 
 resource "openstack_networking_network_v2" "network" {
   name           = "network"
@@ -108,7 +81,7 @@ resource "openstack_networking_subnet_v2" "subnet" {
   gateway_ip       = "192.168.0.1"
   enable_dhcp      = "true"
   allocation_pool  {
-    start = "192.168.0.100"
+    start = "192.168.0.112"
     end   = "192.168.0.250"
   }
 
@@ -118,7 +91,7 @@ resource "openstack_networking_subnet_v2" "subnet" {
 resource "openstack_networking_router_v2" "router" {
   name                = "router"
   admin_state_up      = "true"
-  external_network_id = "fd401e50-9484-4883-9672-a2814089528c" # Replace with the UUID of the "public" network
+  external_network_id = "${var.public_network_id}"
 }
 
 resource "openstack_networking_port_v2" "port_1" {
@@ -162,7 +135,8 @@ resource "openstack_compute_instance_v2" "jumpmachine" {
   flavor_name     = "c4-r8-d80"
   image_id        = "f73ec00b-6ea9-456b-a182-736b53e78e06"
   key_pair        = "${var.user_keyPair}"
-  security_groups = ["default", openstack_compute_secgroup_v2.ssh.name, openstack_compute_secgroup_v2.http.name, openstack_compute_secgroup_v2.https.name, openstack_compute_secgroup_v2.tcp.name]
+
+  security_groups = ["default"]
 
   network {
     name = "network"
@@ -178,11 +152,12 @@ resource "openstack_compute_instance_v2" "webserver" {
   flavor_name     = "c4-r8-d80"
   image_id        = "f73ec00b-6ea9-456b-a182-736b53e78e06"
   key_pair        = "${var.user_keyPair}"
-  security_groups = ["default",openstack_compute_secgroup_v2.ssh.name,openstack_compute_secgroup_v2.http.name, openstack_compute_secgroup_v2.https.name, openstack_compute_secgroup_v2.tcp.name]
-network {
+
+  security_groups = ["default"]
+
+  network {
     name = "network"
     port = openstack_networking_port_v2.port_2.id
-    
   }
 
   availability_zone = "Education"
@@ -194,12 +169,13 @@ resource "openstack_compute_instance_v2" "database" {
   flavor_name     = "c4-r8-d80"
   image_id        = "f73ec00b-6ea9-456b-a182-736b53e78e06"
   key_pair        = "${var.user_keyPair}"
-  security_groups = ["default",openstack_compute_secgroup_v2.ssh.name,openstack_compute_secgroup_v2.http.name, openstack_compute_secgroup_v2.https.name, openstack_compute_secgroup_v2.tcp.name]
+
+  security_groups = ["default"]
+
   network {
     name = "network"
     port = openstack_networking_port_v2.port_3.id
   }
-
 
   availability_zone = "Education"
 }
@@ -316,7 +292,16 @@ resource "null_resource" "deploy_frontend" {
   }
 
   provisioner "file" {
-    content     = templatefile("env.template", { backend_url = "http://${openstack_networking_floatingip_v2.floatingip_1.address}:8080/api/v1" })
+    content = templatefile(
+      "env.template",
+      {
+        backend_url = format(
+          "http://cscloud%s-%s.lnu.se:8080/api/v1",
+          substr(element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 2), -1, 1),
+          element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
+        )
+      }
+    )
     destination = "/home/ubuntu/frontend/.env"
 
     connection {
@@ -361,4 +346,56 @@ resource "null_resource" "create_inventory" {
       echo "database ansible_host=${element(openstack_networking_port_v2.port_3.all_fixed_ips, 0)}" >> inventory.ini
     EOT
   }
+}
+
+output "rendered_template_env" {
+  value = templatefile("backend_template.tpl", {
+    DB_HOST           = openstack_compute_instance_v2.database.network.0.fixed_ip_v4
+    DB_PORT           = "3306"
+    DB_NAME           = var.mysql_database
+    DB_USER           = var.mysql_user
+    DB_PASSWORD       = var.mysql_user_password
+    ALLOWED_ORIGINS   = "http://${openstack_networking_floatingip_v2.floatingip_1.address}:3000,http://${openstack_networking_floatingip_v2.floatingip_1.address}:3000/"
+    ALLOWED_ORIGINS_EXT = format(
+      "http://cscloud%s-%s.lnu.se:3000,http://cscloud%s-%s.lnu.se/",
+      substr(element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 2), -1, 1),
+      element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3),
+      substr(element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 2), -1, 1),
+      element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
+    )
+  })
+}
+
+resource "null_resource" "deploy_backend" {
+  depends_on = [
+    null_resource.jumpmachine_provisioning,
+    null_resource.install_docker
+  ]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      rendered_template_env=$(terraform output -raw rendered_template_env)
+      echo "$rendered_template_env" > backend_template.env
+      ssh -i ps222vt_Keypair.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'mkdir -p /home/ubuntu/backend'
+      scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no backend_template.env ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/backend/template.env
+      ssh -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'docker run -d --name my-notenirvana -p 8080:8080 --env-file /home/ubuntu/backend/template.env prasannjeet/notenirvana:dev-SNAPSHOT'
+    EOT
+  }
+}
+
+resource "local_file" "endpoints" {
+  filename = "endpoints.txt"
+  content = <<-EOF
+    frontend-url: ${format(
+      "http://cscloud%s-%s.lnu.se:3000",
+      substr(element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 2), -1, 1),
+      element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
+    )}
+    backend-url: ${format(
+      "http://cscloud%s-%s.lnu.se:8080/api/swagger-ui/index.html#/",
+      substr(element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 2), -1, 1),
+      element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
+    )}
+    keycloak-url: https://keycloak.ooguy.com
+  EOF
 }

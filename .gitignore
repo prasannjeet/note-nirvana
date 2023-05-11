@@ -615,6 +615,8 @@ terraform/inventory.ini
 terraform/.terraform.lock.hcl
 terraform/floating_ip.txt
 terraform/local_ips.txt
+terraform/backend_template.env
+terraform/endpoints.txt
 
 # Don't send keys
 **/ps222vt_key_ssh.pem
