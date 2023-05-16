@@ -1,4 +1,4 @@
-- name: Install Docker CE and MySQL
+- name: Install Docker CE, Docker Compose and MySQL
   hosts: all_instances
   remote_user: ubuntu
   become: 'yes'
@@ -24,6 +24,18 @@
         name: ubuntu
         groups: docker
         append: 'yes'
+
+    # Install Docker Compose
+    - name: Download Docker Compose
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/v2.18.0/docker-compose-linux-x86_64"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+    - name: Create Docker Compose symlink (optional)
+      file:
+        src: /usr/local/bin/docker-compose
+        dest: /usr/bin/docker-compose
+        state: link
 
     - name: Installing Mysql  and dependencies
       when: inventory_hostname == 'database'
