@@ -66,6 +66,36 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_custom_port_8080
   security_group_id = var.default_sg_id
 }
 
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_custom_port_9100" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 9100
+  port_range_max    = 9100
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = var.default_sg_id
+}
+
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_custom_port_9090" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 9090
+  port_range_max    = 9090
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = var.default_sg_id
+}
+
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_custom_port_3457" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 3457
+  port_range_max    = 3457
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = var.default_sg_id
+}
+
 
 resource "openstack_networking_network_v2" "network" {
   name           = "network"
@@ -397,6 +427,21 @@ resource "local_file" "endpoints" {
       element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
     )}
     keycloak-url: https://keycloak.ooguy.com
+    node-exporter-url: ${format(
+      "http://cscloud%s-%s.lnu.se:9100/metrics",
+      substr(element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 2), -1, 1),
+      element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
+    )}
+    prometheus-url: ${format(
+      "http://cscloud%s-%s.lnu.se:9090",
+      substr(element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 2), -1, 1),
+      element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
+    )}
+    grafana-url: ${format(
+      "http://cscloud%s-%s.lnu.se:3457/login",
+      substr(element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 2), -1, 1),
+      element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
+    )}
   EOF
 }
 
@@ -420,4 +465,60 @@ resource "null_resource" "update_keycloak_client" {
       element(split(".", openstack_networking_floatingip_v2.floatingip_1.address), 3)
     )}"
   }
+}
+
+resource "null_resource" "install_monitoring_jumpmachine" {
+  depends_on = [
+    null_resource.install_docker
+  ]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      ssh -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'mkdir /home/ubuntu/monitor && mkdir /home/ubuntu/monitor/datasources && mkdir /home/ubuntu/monitor/dashboards'
+      scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no grafana/docker-compose.yml ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/monitor/docker-compose.yml
+      scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no grafana/dashboards.yaml ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/monitor/dashboards/dashboards.yaml
+      scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no grafana/dashboard1.json ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/monitor/dashboards/dashboard1.json
+    EOT
+  }
+
+  provisioner "file" {
+    content = templatefile(
+      "grafana/datasources.template",
+      {
+        local_ip = element(openstack_networking_port_v2.port_1.all_fixed_ips, 0)
+      }
+    )
+    destination = "/home/ubuntu/monitor/datasources/datasources.yml"
+
+    connection {
+      type        = "ssh"
+      host        = openstack_networking_floatingip_v2.floatingip_1.address
+      user        = "ubuntu"
+      private_key = file("${var.user_keyPair}.pem")
+    }
+  }
+
+  provisioner "file" {
+    content = templatefile(
+      "grafana/prometheus.template",
+      {
+        local_ip = element(openstack_networking_port_v2.port_1.all_fixed_ips, 0)
+      }
+    )
+    destination = "/home/ubuntu/monitor/prometheus.yml"
+
+    connection {
+      type        = "ssh"
+      host        = openstack_networking_floatingip_v2.floatingip_1.address
+      user        = "ubuntu"
+      private_key = file("${var.user_keyPair}.pem")
+    }
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      ssh -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'cd /home/ubuntu/monitor && docker-compose up -d'
+    EOT
+  }
+
 }

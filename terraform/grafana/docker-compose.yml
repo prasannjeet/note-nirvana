@@ -1,0 +1,25 @@
+version: '3.3'
+services:
+    node-exporter:
+        network_mode: host
+        pid: host
+        volumes:
+            - '/:/host:ro,rslave'
+        image: 'quay.io/prometheus/node-exporter:v1.5.0'
+
+    prometheus:
+        container_name: prometheus
+        ports:
+            - '9090:9090'
+        volumes:
+            - './prometheus.yml:/etc/prometheus/prometheus.yml'
+        image: prom/prometheus:v2.44.0
+
+    grafana:
+        container_name: grafana
+        ports:
+            - '3457:3000' #modify 3457 to your setup needs
+        volumes:
+            - './datasources:/etc/grafana/provisioning/datasources' # New line
+            - './dashboards:/etc/grafana/provisioning/dashboards'   # New line
+        image: grafana/grafana:9.5.2-ubuntu
