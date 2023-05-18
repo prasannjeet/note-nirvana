@@ -1,11 +1,55 @@
-# Terraform OpenStack Infrastructure
+# Infrastructure Monitoring with Grafana, Prometheus, and Exporters in Terraform
 
-This repository contains Terraform configuration files to provision a custom infrastructure on OpenStack. It deploys a jump server, a web server, and a database server, each with specific security groups for SSH, HTTP, HTTPS, and TCP access.
+## Introduction
 
-## What is Terraform?
+Here, we will comprehensively describe how we set up a monitoring stack for our OpenStack instances using Grafana, Prometheus, Node Exporter, and MySQLd Exporter within the Terraform framework. For those unfamiliar with these technologies:
 
-Terraform is an open-source infrastructure as code (IaC) software tool that allows you to define and provide data center infrastructure using a declarative configuration language. Terraform is cloud-agnostic and supports multiple providers such as AWS, Azure, Google Cloud, and OpenStack.
+-   **Grafana**: An open-source platform for monitoring and observability, providing you with the ability to visualize, explore, and alert on metrics from different data sources.
+    
+-   **Prometheus**: A leading open-source monitoring solution that records real-time metrics in a time-series database.
+    
+-   **Node Exporter**: A Prometheus exporter for hardware and OS metrics with pluggable metric collectors, allowing you to measure various machine resources such as memory, disk I/O, CPU, network, etc.
+    
+-   **MySQLd Exporter**: A Prometheus exporter for MySQL server metrics. It provides insight into the performance characteristics of MySQL databases.
+    
 
+## Setting up the Monitoring Stack
+
+In this project, we use Terraform to orchestrate our infrastructure setup, and we focus on visualizing our OpenStack instances' statistics.
+
+1.  **Deploying Grafana, Prometheus, and Node Exporter**: We install these components on our jump machine using Docker, effectively isolating their environment and ensuring consistent operation regardless of the host system.
+    
+    In this setup, we move the Docker Compose files to the jump machine and initiate the Docker containers. This procedure gets us up and running with Grafana, Prometheus, and Node Exporter on the jump machine.
+    
+    We have meticulously configured our Docker Compose file to include all necessary data sources for Grafana, as well as all the details required to create Grafana dashboards. This configuration includes a `dashboard.json` file for the dashboard settings and a `datasources.yml` file for data source settings. With these configurations, our Grafana instance is equipped to automatically create a dashboard that can visualize the jump machine's statistics.
+    
+2.  **Extending Monitoring to Other Instances**: Using Ansible, we install Prometheus and Node Exporter on our other instances, i.e., the database and web server instances. Once deployed, Grafana on the jump machine can fetch metrics from these instances and present them in the same dashboard. As a result, we achieve a unified monitoring dashboard visualizing all three instances.
+    
+
+## Monitoring MySQL Database Statistics
+
+We go a step further to set up a specialized Grafana dashboard for visualizing statistics of our MySQL database deployed on the database instance.
+
+-   **Prometheus and MySQLd Exporter Setup**: We create a new Prometheus server on the database instance, run inside Docker. This new Prometheus server is integrated with the MySQLd Exporter, a custom exporter designed to fetch and expose MySQL statistics.
+    
+-   **Extending Grafana to Connect to New Prometheus**: We configure our original Grafana instance on the jump machine to accept connections from the new Prometheus on the database instance. This setup allows us to visualize the MySQL database details fetched by the new Prometheus server in a separate Grafana dashboard.
+    
+
+
+## Conclusion
+
+Our Terraform setup thus achieves comprehensive monitoring of our OpenStack instances. We have two dashboards within Grafana:
+
+1.  **General Dashboard**: This dashboard provides an overview of all three instances, offering complete statistics fetched using the Node Exporters deployed on each instance.
+    
+2.  **Database Dashboard**: This separate dashboard specifically visualizes statistics for the MySQL database, fetched from the new Prometheus server integrated with MySQLd Exporter.
+    
+
+This setup gives us the power of a holistic and specific analysis, with one dashboard responsible for monitoring and displaying statistics for all three instances, and another focusing on the MySQL database specifically. With this robust setup, we ensure maximum visibility and awareness about the performance and health of our infrastructure, enabling us to take swift action in response to any issues and maintain high levels of performance and reliability.
+
+By leveraging the capabilities of Grafana, Prometheus, and exporters, we are better equipped to handle the complexities of our OpenStack instances, delivering on the promise of modern infrastructure management.
+
+# Deploy the terraform stack
 ## Prerequisites
 
 To get started, you'll need the following installed:
@@ -29,6 +73,7 @@ To get started, you'll need the following installed:
 	```
     
 3.  Set environment variables for your Terraform configuration. Make sure to replace `<pssword>`, etc. with your actual password, etc:
+	Just run the following commands in your terminal.
 
 	```
 	export TF_VAR_user_name="<username>"
@@ -41,10 +86,6 @@ To get started, you'll need the following installed:
 	export TF_VAR_user_keyPair="<key-pair-name for all instances in cscloud>"
 	export TF_VAR_default_sg_id="<id of default security group in cscloud>"
 	export TF_VAR_public_network_id="<id of public network in cscloud>"
-	export TF_VAR_mysql_root_password=password
-	export TF_VAR_mysql_user=user
-	export TF_VAR_mysql_user_password=password
-	export TF_VAR_mysql_database=database
 	```
 
 4. Ensure that `rsync` in installed in your computer. If not, run `brew install rsync` to install (for mac). We use rsync to copy files to jumpmachine based on the `.gitignore` file.
@@ -71,26 +112,11 @@ terraform apply "my_plan.tfplan"
 
 ## Infrastructure Overview
 
--   **Security Groups:**
-    
-    -   SSH: Allows SSH access (port 22)
-    -   HTTP: Allows HTTP access (port 81)
-    -   HTTPS: Allows HTTPS access (port 443)
-    -   TCP: Allows TCP access (port 80)
--   **Network Components:**
-    
-    -   Network
-    -   Subnet
-    -   Router
-    -   Ports for each server
 -   **Servers:**
     
     -   Jump Server: A jump server with SSH, HTTP, HTTPS, and TCP access
     -   Web Server: A web server with SSH, HTTP, HTTPS, and TCP access
     -   Database Server: A database server with SSH, HTTP, HTTPS, and TCP access
--   **Floating IP:**
-    
-    -   A floating IP is associated with the jump server for external access
 
 ## Clean Up
 
@@ -124,15 +150,20 @@ The following variables are required:
 - `auth_url`
 - `region`
 - `user_keyPiar`
+- `default_sg_id`
+- `public_network_id`
 
 ## Security Groups
 
 There are four security groups created in this setup:
 
 1. `ssh` - Allows SSH access (port 22) from any IP address
-2. `http` - Allows HTTP access (port 81) from any IP address
-3. `https` - Allows HTTPS access (port 443) from any IP address
-4. `tcp` - Allows TCP access (port 80) from any IP address
+address
+2. `3000` - Port 3000 for frontend application
+3. `8080` - Port 8080 for backend application
+4. `9100` - Port 9100 for node exporter
+5. `9090` - Port 9090 for prometheus
+6. `3457` - Port 3457 for grafana
 
 ## Network
 

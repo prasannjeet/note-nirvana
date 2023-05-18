@@ -292,7 +292,7 @@ resource "null_resource" "install_ansible" {
   }
 }
 
-resource "null_resource" "install_docker" {
+resource "null_resource" "install-components" {
   depends_on = [
       null_resource.jumpmachine_provisioning,
       null_resource.install_ansible
@@ -303,9 +303,9 @@ resource "null_resource" "install_docker" {
       ANSIBLE_HOST_KEY_CHECKING = "False"
     }
     command = <<-EOT
-      scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no install-docker.yml ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/install-docker.yml
+      scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no install-components.yml ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/install-components.yml
       scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no inventory.ini ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/inventory.ini
-      ssh -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'ANSIBLE_SSH_ARGS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" ansible-playbook -i /home/ubuntu/inventory.ini --limit instances /home/ubuntu/install-docker.yml -e "mysql_root_password=${var.mysql_root_password} mysql_user=${var.mysql_user} mysql_user_password=${var.mysql_user_password} mysql_database=${var.mysql_database}"'
+      ssh -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'ANSIBLE_SSH_ARGS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" ansible-playbook -i /home/ubuntu/inventory.ini --limit instances /home/ubuntu/install-components.yml -e "mysql_root_password=${var.mysql_root_password} mysql_user=${var.mysql_user} mysql_user_password=${var.mysql_user_password} mysql_database=${var.mysql_database}"'
     EOT
   }
 }
@@ -314,7 +314,7 @@ resource "null_resource" "deploy_frontend" {
   depends_on = [
     openstack_compute_instance_v2.jumpmachine,
     null_resource.jumpmachine_provisioning,
-    null_resource.install_docker
+    null_resource.install-components
     ]
   
   provisioner "local-exec" {
@@ -399,7 +399,7 @@ output "rendered_template_env" {
 resource "null_resource" "deploy_backend" {
   depends_on = [
     null_resource.jumpmachine_provisioning,
-    null_resource.install_docker
+    null_resource.install-components
   ]
 
   provisioner "local-exec" {
@@ -469,7 +469,7 @@ resource "null_resource" "update_keycloak_client" {
 
 resource "null_resource" "install_monitoring_jumpmachine" {
   depends_on = [
-    null_resource.install_docker
+    null_resource.install-components
   ]
 
   provisioner "local-exec" {

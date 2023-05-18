@@ -137,7 +137,7 @@
         recreate: yes
         detach: true
         env:
-          DATA_SOURCE_NAME: "user:password@({{ db_ip }}:3306)/"
+          DATA_SOURCE_NAME: "{{ mysql_user }}:{{ mysql_user_password }}@({{ db_ip }}:3306)/"
         command: >
           --collect.global_status
           --collect.info_schema.innodb_metrics
