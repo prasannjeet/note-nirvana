@@ -1,3 +1,4 @@
+# Set these up in terraform.tfvars or add env variables as described in README
 variable "user_name" {}
 variable "tenant_name" {}
 variable "tenant_id" {}
@@ -9,6 +10,7 @@ variable "user_keyPair" {}
 variable "default_sg_id" {}
 variable "public_network_id" {}
 
+# These are already defined in terraform.tfvars. You can change them if you want
 variable "mysql_root_password" {}
 variable "mysql_user" {}
 variable "mysql_user_password" {}
