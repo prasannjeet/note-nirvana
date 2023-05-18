@@ -3786,7 +3786,7 @@
     "type": "timepicker"
   },
   "timezone": "",
-  "title": "MySQL Exporter Quickstart and Dashboard",
+  "title": "Secondary dashboard for MySQL Monitoring via MySQLd Exporter and Prometheus",
   "uid": "549c2bf8936f7767ea6ac47c47b00f2a",
   "version": 1
 }
