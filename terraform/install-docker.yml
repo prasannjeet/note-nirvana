@@ -37,6 +37,22 @@
         dest: /usr/bin/docker-compose
         state: link
 
+    - name: Ensure Python3 is installed
+      apt:
+        name: python3
+        state: present
+
+    - name: Ensure pip is installed
+      apt:
+        name: python3-pip
+        state: present
+
+    # Install Docker SDK for Python
+    - name: Install Docker SDK for Python
+      pip:
+        name: docker
+        state: present
+
     - name: Installing Mysql  and dependencies
       when: inventory_hostname == 'database'
       become: yes
@@ -78,6 +94,106 @@
         backup: yes
       notify:
         - Restart mysql
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Pull node-exporter image
+      docker_image:
+        name: quay.io/prometheus/node-exporter:v1.5.0
+        source: pull
+      when: inventory_hostname == 'database' or inventory_hostname == 'webserver'
+
+    - name: Run node-exporter container
+      docker_container:
+        name: node-exporter
+        image: quay.io/prometheus/node-exporter:v1.5.0
+        state: started
+        recreate: yes
+        detach: yes
+        network_mode: host
+        pid_mode: host
+        volumes:
+          - '/:/host:ro,rslave'
+      when: inventory_hostname == 'database' or inventory_hostname == 'webserver'
+
+    - name: Pull mysqld-exporter image
+      docker_image:
+        name: prom/mysqld-exporter
+        tag: v0.14.0
+        source: pull
+      when: inventory_hostname == 'database'
+
+    - name: Define database IP
+      set_fact:
+        db_ip: "{{ hostvars['database']['ansible_host'] }}"
+
+    - name: Run mysqld-exporter container
+      docker_container:
+        name: mysqld-exporter
+        image: prom/mysqld-exporter:v0.14.0
+        state: started
+        recreate: yes
+        detach: true
+        env:
+          DATA_SOURCE_NAME: "user:password@({{ db_ip }}:3306)/"
+        command: >
+          --collect.global_status
+          --collect.info_schema.innodb_metrics
+          --collect.auto_increment.columns
+          --collect.info_schema.processlist
+          --collect.binlog_size
+          --collect.info_schema.tablestats
+          --collect.global_variables
+          --collect.info_schema.query_response_time
+          --collect.info_schema.userstats
+          --collect.info_schema.tables
+          --collect.perf_schema.tablelocks
+          --collect.perf_schema.file_events
+          --collect.perf_schema.eventswaits
+          --collect.perf_schema.indexiowaits
+          --collect.perf_schema.tableiowaits
+        published_ports:
+          - "9104:9104"
+      when: inventory_hostname == 'database'
+
+    - name: Create Prometheus configuration file
+      copy:
+        dest: /home/ubuntu/prometheus.yml
+        content: |
+          global:
+            scrape_interval: 5s
+            external_labels:
+              monitor: 'node'
+          scrape_configs:
+            - job_name: 'prometheus'
+              static_configs:
+                - targets: ['localhost:9090']
+            - job_name: 'mysqld-exporter'
+              static_configs:
+                - targets: ['{{ db_ip }}:9104']
+      when: inventory_hostname == 'database'
+
+    - name: Pull Prometheus image
+      docker_image:
+        name: prom/prometheus
+        tag: v2.44.0
+        source: pull
+      when: inventory_hostname == 'database'
+
+    - name: Run Prometheus container
+      docker_container:
+        name: prometheus
+        image: prom/prometheus:v2.44.0
+        state: started
+        recreate: yes
+        detach: true
+        volumes:
+          - "/home/ubuntu/prometheus.yml:/etc/prometheus/prometheus.yml"
+        published_ports:
+          - "9090:9090"
+      when: inventory_hostname == 'database'
 
   handlers:
     - name: Restart mysql

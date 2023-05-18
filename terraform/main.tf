@@ -477,7 +477,7 @@ resource "null_resource" "install_monitoring_jumpmachine" {
       ssh -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'mkdir /home/ubuntu/monitor && mkdir /home/ubuntu/monitor/datasources && mkdir /home/ubuntu/monitor/dashboards'
       scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no grafana/docker-compose.yml ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/monitor/docker-compose.yml
       scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no grafana/dashboards.yaml ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/monitor/dashboards/dashboards.yaml
-      scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no grafana/dashboard1.json ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/monitor/dashboards/dashboard1.json
+      scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no grafana/dashboard*.json ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/monitor/dashboards/
     EOT
   }
 
@@ -485,7 +485,8 @@ resource "null_resource" "install_monitoring_jumpmachine" {
     content = templatefile(
       "grafana/datasources.template",
       {
-        local_ip = element(openstack_networking_port_v2.port_1.all_fixed_ips, 0)
+        local_ip = element(openstack_networking_port_v2.port_1.all_fixed_ips, 0),
+        db_ip = element(openstack_networking_port_v2.port_3.all_fixed_ips, 0)
       }
     )
     destination = "/home/ubuntu/monitor/datasources/datasources.yml"
@@ -502,7 +503,9 @@ resource "null_resource" "install_monitoring_jumpmachine" {
     content = templatefile(
       "grafana/prometheus.template",
       {
-        local_ip = element(openstack_networking_port_v2.port_1.all_fixed_ips, 0)
+        local_ip = element(openstack_networking_port_v2.port_1.all_fixed_ips, 0),
+        ws_ip = element(openstack_networking_port_v2.port_2.all_fixed_ips, 0),
+        db_ip = element(openstack_networking_port_v2.port_3.all_fixed_ips, 0)
       }
     )
     destination = "/home/ubuntu/monitor/prometheus.yml"

@@ -8,4 +8,4 @@ scrape_configs:
       - targets: ['${local_ip}:9090']
   - job_name: 'node-exporter'
     static_configs:
-      - targets: ['${local_ip}:9100']
+      - targets: ['${local_ip}:9100', '${ws_ip}:9100', '${db_ip}:9100']
