@@ -6,9 +6,11 @@ datasources:
     url: http://${local_ip}:9090
     access: proxy
     isDefault: true
+    uid: UID1A3F1BC9D63E44E
 
   - name: Prometheus-DB
     type: prometheus
     url: http://${db_ip}:9090
     access: proxy
     isDefault: false
+    uid: PB91AD3CFB5D39B44
