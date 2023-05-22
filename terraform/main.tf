@@ -376,7 +376,7 @@ resource "null_resource" "deploy_backend" {
     command = <<-EOT
       rendered_template_env=$(terraform output -raw rendered_template_env)
       echo "$rendered_template_env" > backend_template.env
-      ssh -i ps222vt_Keypair.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'mkdir -p /home/ubuntu/backend'
+      ssh -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'mkdir -p /home/ubuntu/backend'
       scp -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no backend_template.env ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address}:/home/ubuntu/backend/template.env
       ssh -i ${var.user_keyPair}.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@${openstack_networking_floatingip_v2.floatingip_1.address} 'docker run -d --name my-notenirvana -p 8080:8080 --env-file /home/ubuntu/backend/template.env prasannjeet/notenirvana:dev-SNAPSHOT'
     EOT
