@@ -16,11 +16,14 @@ import com.prasannjeet.notenirvana.jpa.entity.NoteEntity;
 import com.prasannjeet.notenirvana.jpa.repository.NoteEntityRepository;
 import com.prasannjeet.notenirvana.model.CreateNoteRequest;
 import com.prasannjeet.notenirvana.model.Note;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -28,6 +31,9 @@ import org.springframework.web.context.request.NativeWebRequest;
 @Service
 @RequiredArgsConstructor
 public class NotesApiDelegateImpl implements NotesApiDelegate {
+  
+  @Value("${appconfig.get-limited-notes")
+  private String getLimitedNotes;
 
   private final NoteEntityRepository noteEntityRepository;
 
@@ -70,17 +76,19 @@ public class NotesApiDelegateImpl implements NotesApiDelegate {
 
   @Override
   public ResponseEntity<List<Note>> getNotes(String authorization) {
-    List<NoteEntity> allByUserId = noteEntityRepository.findAllByUserId(getUserEmail());
+    Integer limtedNotesCount = Integer.parseInt(getLimitedNotes);
     
-    if (allByUserId.isEmpty()) {
+    Pageable limitedNotes = PageRequest.of(0, limtedNotesCount);
+    Page<NoteEntity> page = noteEntityRepository.findAllByUserId(getUserEmail(), limitedNotes);
+
+    if (page.isEmpty()) {
       return new ResponseEntity<>(NOT_FOUND);
     }
-    
-    List<Note> notes = new ArrayList<>();
-    for (var item : allByUserId) {
-      notes.add(convertNoteEntityToNote(item));
-    }
-    
+
+    List<Note> notes = page.getContent().stream()
+        .map(NotesApiDelegateUtil::convertNoteEntityToNote)
+        .toList();
+
     return new ResponseEntity<>(notes, OK);
   }
 

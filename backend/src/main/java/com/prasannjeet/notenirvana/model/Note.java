@@ -1,24 +1,31 @@
 package com.prasannjeet.notenirvana.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.Arrays;
+import java.net.URI;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.UUID;
-import javax.annotation.Generated;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.format.annotation.DateTimeFormat;
+import java.util.NoSuchElementException;
+import org.openapitools.jackson.nullable.JsonNullable;
+import java.time.OffsetDateTime;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
+import java.util.*;
+import javax.annotation.Generated;
 
 /**
  * Note
  */
 @lombok.Data
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-04-18T00:46:06.249952+02:00[Europe/Stockholm]")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2023-05-24T23:27:06.099068+02:00[Europe/Stockholm]")
 public class Note {
 
   private JsonNullable<UUID> id = JsonNullable.undefined();

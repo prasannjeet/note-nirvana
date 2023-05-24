@@ -20,5 +20,8 @@ jwt:
       resource-id: note-nirvana
       principal-attribute: preferred_username
 
+appconfig:
+  get-limited-notes: 100
+
 keycloak-config:
   allowedOrigins: http://localhost:3000/,http://localhost:3000

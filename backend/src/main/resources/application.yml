@@ -26,6 +26,9 @@ jwt:
       resource-id: ${KEYCLOAK_CLIENT_ID}
       principal-attribute: preferred_username
 
+appconfig:
+  get-limited-notes: ${GET_LIMITED_NOTES:100}
+
 logging:
   level:
     org.springframework.security: DEBUG
