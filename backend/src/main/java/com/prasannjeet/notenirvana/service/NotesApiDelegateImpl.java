@@ -32,7 +32,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 @RequiredArgsConstructor
 public class NotesApiDelegateImpl implements NotesApiDelegate {
   
-  @Value("${appconfig.get-limited-notes")
+  @Value("${appconfig.get-limited-notes}")
   private String getLimitedNotes;
 
   private final NoteEntityRepository noteEntityRepository;
