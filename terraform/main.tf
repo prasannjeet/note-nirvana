@@ -164,7 +164,7 @@ resource "openstack_networking_router_interface_v2" "router_gateway_1" {
 # Create the jump server
 resource "openstack_compute_instance_v2" "jumpmachine" {
   name            = "jumpmachine"
-  flavor_name     = "c4-r8-d80"
+  flavor_name     = "c2-r2-d40"
   image_id        = "f73ec00b-6ea9-456b-a182-736b53e78e06"
   key_pair        = "${var.user_keyPair}"
 
@@ -181,7 +181,7 @@ resource "openstack_compute_instance_v2" "jumpmachine" {
 
 resource "openstack_compute_instance_v2" "webserver" {
   name            = "webserver"
-  flavor_name     = "c4-r8-d80"
+  flavor_name     = "c2-r2-d40"
   image_id        = "f73ec00b-6ea9-456b-a182-736b53e78e06"
   key_pair        = "${var.user_keyPair}"
 
@@ -198,7 +198,7 @@ resource "openstack_compute_instance_v2" "webserver" {
 # Create the web server
 resource "openstack_compute_instance_v2" "database" {
   name            = "database"
-  flavor_name     = "c4-r8-d80"
+  flavor_name     = "c2-r2-d40"
   image_id        = "f73ec00b-6ea9-456b-a182-736b53e78e06"
   key_pair        = "${var.user_keyPair}"
 
@@ -416,6 +416,11 @@ resource "null_resource" "deploy_backend" {
 }
 
 resource "local_file" "endpoints" {
+
+  depends_on = [
+    null_resource.deploy_frontend
+  ]
+
   filename = "endpoints.txt"
   content = <<-EOF
     frontend-url: ${format(
@@ -451,6 +456,10 @@ resource "null_resource" "update_keycloak_client" {
   triggers = {
     floating_ip = openstack_networking_floatingip_v2.floatingip_1.address
   }
+
+  depends_on = [
+    null_resource.deploy_frontend
+  ]
 
   provisioner "local-exec" {
     command = "bash add-keycloak-cors.sh ${format(
