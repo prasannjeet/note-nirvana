@@ -1,7 +1,7 @@
 # You can download the OpenStack RC File v3 to find out your tenant name and tenant id.
 # This file can be found in cscloud.lnu.se if you click on your username at the top right.
 
-# Your openstack username
+# Your username (OS_USERNAME in RC file)
 user_name = ""
 # Your openstack password
 password = ""
